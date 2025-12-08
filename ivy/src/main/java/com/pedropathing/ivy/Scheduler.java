@@ -37,7 +37,11 @@ public class Scheduler {
         //            for (Object req : cmd.getRequirements()) {
         //                commandMap.put(req, cmd);
         //            }
+        boolean wasEmpty = commands.isEmpty();
         commands.addAll(Arrays.asList(cmds));
+        if (wasEmpty && !commands.isEmpty()) {
+            commands.getFirst().start();
+        }
     }
 
     public void execute() {

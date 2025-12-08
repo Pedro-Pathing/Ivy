@@ -80,12 +80,15 @@ public class Command implements ICommand {
     public Interruptibility getInterruptibility() { return interruptibility; }
 
     public Command copy() {
-        return new Command()
+        Command copy = new Command()
                 .setExecute(this.execute)
                 .setStart(this.start)
                 .setEnd(this.end)
                 .setDone(this.done)
-                .setInterruptibility(this.interruptibility)
-                .setRequirement(this.requirements.toArray());
+                .setInterruptibility(this.interruptibility);
+        if (this.requirements != null) {
+            copy.setRequirement(this.requirements.toArray());
+        }
+        return copy;
     }
 }

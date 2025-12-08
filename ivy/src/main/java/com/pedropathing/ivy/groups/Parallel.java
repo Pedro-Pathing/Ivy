@@ -22,15 +22,14 @@ public class Parallel implements ICommand {
     @Override
     public void execute() {
         if (!done()) {
-            if (!commands.isEmpty()) {
-                Iterator<ICommand> it = commands.iterator();
-                while (it.hasNext()) {
-                    ICommand command = it.next();
-                    if (command.done()) {
-                        it.remove();
-                    } else {
-                        command.execute();
-                    }
+            Iterator<ICommand> it = commands.iterator();
+            while (it.hasNext()) {
+                ICommand command = it.next();
+                if (command.done()) {
+                    command.end(false);
+                    it.remove();
+                } else {
+                    command.execute();
                 }
             }
         }
@@ -47,7 +46,12 @@ public class Parallel implements ICommand {
     }
 
     @Override
-    public void end(boolean interrupted) {}
+    public void end(boolean interrupted) {
+        for (ICommand command : commands) {
+            command.end(interrupted);
+        }
+        commands.clear();
+    }
 
     @Override
     public ICommand copy() {
@@ -60,7 +64,11 @@ public class Parallel implements ICommand {
     }
 
     @Override
-    public void start() {}
+    public void start() {
+        for (ICommand command : commands) {
+            command.start();
+        }
+    }
 
     @Override
     public boolean done() {
