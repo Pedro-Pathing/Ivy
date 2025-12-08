@@ -14,10 +14,10 @@ public class Loop extends Sequential {
         }
         commands.addAll(Arrays.asList(loops));
 
-        HashSet<Object> commandSet = new HashSet<>();
-        for (ICommand c : commands) {
-            commandSet.addAll(c.getRequirements());
-        }
-        requirements = new ArrayList<>(commandSet);
+//        HashSet<Object> commandSet = new HashSet<>();
+//        for (ICommand c : commands) {
+//            commandSet.addAll(c.getRequirements());
+//        }
+//        requirements = new ArrayList<>(commandSet);
     }
 }

@@ -12,11 +12,7 @@ public class Sequential implements ICommand {
     public Sequential(ICommand... cmds) {
         commands.addAll(Arrays.asList(cmds));
 
-        HashSet<Object> commandSet = new HashSet<>();
-        for (ICommand command : commands) {
-            commandSet.addAll(command.getRequirements());
-        }
-        requirements = new ArrayList<>(commandSet);
+//        rebuildRequirements();
     }
 
     public Sequential() {
@@ -24,16 +20,20 @@ public class Sequential implements ICommand {
 
     @Override
     public void execute() {
-        if (!done()) {
-            ICommand current = commands.peek();
+        if (done()) return;
 
-            assert current != null;
+        ICommand current = commands.peek();
+        assert current != null;
 
-            if (current.done())
-                commands.poll();
-            else
-                current.execute();
-
+        if (current.done()) {
+            current.end(false);
+            commands.poll();
+            if (!done()) {
+                ICommand next = commands.peek();
+                if (next != null) next.start();
+            }
+        } else {
+            current.execute();
         }
     }
 
@@ -48,7 +48,14 @@ public class Sequential implements ICommand {
     }
 
     @Override
-    public void end(boolean interrupted) {}
+    public void end(boolean interrupted) {
+        while (!commands.isEmpty()) {
+            ICommand c = commands.poll();
+            if (c != null) {
+                c.end(interrupted);
+            }
+        }
+    }
 
     @Override
     public ICommand copy() {
@@ -61,10 +68,24 @@ public class Sequential implements ICommand {
     }
 
     @Override
-    public void start() {}
+    public void start() {
+        if (!done()) {
+            ICommand current = commands.peek();
+            if (current != null) current.start();
+        }
+    }
 
     @Override
     public boolean done() {
         return commands.isEmpty();
+    }
+
+    private void rebuildRequirements() {
+        Set<Object> set = new HashSet<>();
+        for (ICommand command : commands) {
+            List<Object> r = command.getRequirements();
+            if (r != null) set.addAll(r);
+        }
+        requirements = new ArrayList<>(set);
     }
 }

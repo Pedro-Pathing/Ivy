@@ -41,15 +41,17 @@ public class Scheduler {
     }
 
     public void execute() {
-        Iterator<ICommand> it = commands.iterator();
-        while (it.hasNext()) {
-            ICommand command = it.next();
-            if (command.done()) {
-                it.remove();
-                if (!commands.isEmpty())
-                    commands.getFirst().start();
-            } else {
-                command.execute();
+        if (!commands.isEmpty()) {
+            Iterator<ICommand> it = commands.iterator();
+            while (it.hasNext()) {
+                ICommand command = it.next();
+                if (command.done()) {
+                    it.remove();
+                    if (!commands.isEmpty())
+                        commands.getFirst().start();
+                } else {
+                    command.execute();
+                }
             }
         }
     }

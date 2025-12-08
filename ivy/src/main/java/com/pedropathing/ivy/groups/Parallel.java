@@ -12,23 +12,25 @@ public class Parallel implements ICommand {
     public Parallel(ICommand... cmds) {
         commands.addAll(Arrays.asList(cmds));
 
-        HashSet<Object> commandSet = new HashSet<>();
-        for (ICommand command : commands) {
-            commandSet.addAll(command.getRequirements());
-        }
-        requirements = new ArrayList<>(commandSet);
+//        HashSet<Object> commandSet = new HashSet<>();
+//        for (ICommand command : commands) {
+//            commandSet.addAll(command.getRequirements());
+//        }
+//        requirements = new ArrayList<>(commandSet);
     }
 
     @Override
     public void execute() {
         if (!done()) {
-            Iterator<ICommand> it = commands.iterator();
-            while (it.hasNext()) {
-                ICommand command = it.next();
-                if (command.done()) {
-                    it.remove();
-                } else {
-                    command.execute();
+            if (!commands.isEmpty()) {
+                Iterator<ICommand> it = commands.iterator();
+                while (it.hasNext()) {
+                    ICommand command = it.next();
+                    if (command.done()) {
+                        it.remove();
+                    } else {
+                        command.execute();
+                    }
                 }
             }
         }
