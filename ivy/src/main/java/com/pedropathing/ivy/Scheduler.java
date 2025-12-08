@@ -63,14 +63,6 @@ public class Scheduler {
             }
         }
     }
-    private void rebuildRequirements() {
-        Set<Object> set = new HashSet<>();
-        for (ICommand command : commands) {
-            List<Object> r = command.getRequirements();
-            if (r != null) set.addAll(r);
-        }
-        requirements = new ArrayList<>(set);
-    }
 
     public void execute() {
         if (!commands.isEmpty()) {

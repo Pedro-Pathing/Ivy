@@ -1,8 +1,5 @@
 package com.pedropathing.ivy;
 
-import com.pedropathing.ivy.groups.Parallel;
-import com.pedropathing.ivy.groups.Sequential;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -64,18 +61,11 @@ public class Command implements ICommand {
         return this;
     }
 
-    public Command setRequirement(Object... requirements) {
+    public Command setRequirements(Object... requirements) {
         this.requirements = Arrays.asList(requirements);
         return this;
     }
 
-    public Sequential then(ICommand then) {
-        return new Sequential(this, then);
-    }
-
-    public Parallel with(ICommand with) {
-        return new Parallel(this, with);
-    }
 
     public List<Object> getRequirements() { return requirements; }
     public Interruptibility getInterruptibility() { return interruptibility; }
@@ -88,7 +78,7 @@ public class Command implements ICommand {
                 .setDone(this.done)
                 .setInterruptibility(this.interruptibility);
         if (this.requirements != null) {
-            copy.setRequirement(this.requirements.toArray());
+            copy.setRequirements(this.requirements.toArray());
         }
         return copy;
     }
