@@ -4,10 +4,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
 
 public class Command implements ICommand {
     private List<Object> requirements = new ArrayList<>();
-    private Runnable execute, start, end;
+    private Runnable execute, start;
+    private Consumer<Boolean> end;
     private BooleanSupplier done;
     private Interruptibility interruptibility = Interruptibility.INTERRUPTIBLE;
 
@@ -25,7 +27,7 @@ public class Command implements ICommand {
 
     public void end(boolean interrupted) {
         if (end != null) {
-            end.run();
+            end.accept(interrupted);
         }
     }
 
@@ -46,9 +48,21 @@ public class Command implements ICommand {
         return this;
     }
 
-    public Command setEnd(Runnable r) {
+    public Command setEnd(Consumer<Boolean> r) {
         this.end = r;
         return this;
+    }
+
+    public Command setCancel(Runnable r) {
+        this.end = (interrupted) -> {
+            if (interrupted)
+                r.run();
+        };
+        return this;
+    }
+
+    public Command onInterrupt(Runnable r) {
+        return setCancel(r);
     }
 
     public Command setDone(BooleanSupplier r) {
