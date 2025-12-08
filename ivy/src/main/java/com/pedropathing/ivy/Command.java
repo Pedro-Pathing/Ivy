@@ -13,6 +13,12 @@ public class Command implements ICommand {
     private BooleanSupplier done;
     private Interruptibility interruptibility;
 
+    public Command(Runnable r) {
+        this.execute = r;
+    }
+
+    public Command() {}
+
     public void execute() {
         if (execute != null) {
             execute.run();
