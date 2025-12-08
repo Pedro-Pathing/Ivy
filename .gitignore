@@ -82,3 +82,8 @@ lint/tmp/
 
 # kls
 kls_database.db
+
+# Claude Code
+.claude/
+CLAUDE.md
+claude.md
