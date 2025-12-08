@@ -9,7 +9,6 @@ public class Follow extends Command {
     private final PathChain path;
     private boolean holdEnd = true;
     private double maxPower = 1;
-    private double completionThreshold = 0.99;
 
     public Follow(Follower f, PathChain pathChain) {
         this.follower = f;
@@ -53,16 +52,6 @@ public class Follow extends Command {
      */
     public Follow setMaxPower(double power) {
         this.maxPower = power;
-        return this;
-    }
-
-    /**
-     * Sets the T-value at which the follower will consider the path complete
-     * @param t Between 0 and 1
-     * @return This command for compatibility in command groups
-     */
-    public Follow setCompletionThreshold(double t) {
-        this.completionThreshold = t;
         return this;
     }
     
