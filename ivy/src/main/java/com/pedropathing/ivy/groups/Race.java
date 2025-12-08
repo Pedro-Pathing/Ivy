@@ -6,7 +6,10 @@ import com.pedropathing.ivy.Interruptibility;
 import java.util.*;
 
 public class Race implements ICommand {
+    private LinkedList<ICommand> commands = new LinkedList<>();
+    private List<Object> requirements;
     protected boolean raceCompleted = false;
+
     public Race(ICommand... cmds) {
         commands.addAll(Arrays.asList(cmds));
 
