@@ -7,17 +7,12 @@ import java.util.*;
 
 public class Race implements ICommand {
     private LinkedList<ICommand> commands = new LinkedList<>();
-    private List<Object> requirements;
+    private List<Object> requirements = new ArrayList<>();
     protected boolean raceCompleted = false;
 
     public Race(ICommand... cmds) {
         commands.addAll(Arrays.asList(cmds));
-
-//        HashSet<Object> commandSet = new HashSet<>();
-//        for (ICommand command : commands) {
-//            commandSet.addAll(command.getRequirements());
-//        }
-//        requirements = new ArrayList<>(commandSet);
+        rebuildRequirements();
     }
 
     @Override
@@ -69,6 +64,15 @@ public class Race implements ICommand {
         for (ICommand command : commands) {
             command.start();
         }
+    }
+
+    private void rebuildRequirements() {
+        Set<Object> set = new HashSet<>();
+        for (ICommand command : commands) {
+            List<Object> r = command.getRequirements();
+            if (r != null) set.addAll(r);
+        }
+        requirements = new ArrayList<>(set);
     }
 
     @Override
