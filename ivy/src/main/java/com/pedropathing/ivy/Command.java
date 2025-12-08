@@ -1,5 +1,8 @@
 package com.pedropathing.ivy;
 
+import com.pedropathing.ivy.groups.Parallel;
+import com.pedropathing.ivy.groups.Sequential;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.BooleanSupplier;
@@ -63,6 +66,14 @@ public class Command implements ICommand {
     public Command setRequirement(Object... requirements) {
         this.requirements = Arrays.asList(requirements);
         return this;
+    }
+
+    public Sequential then(ICommand then) {
+        return new Sequential(this, then);
+    }
+
+    public Parallel with(ICommand with) {
+        return new Parallel(this, with);
     }
 
     public List<Object> getRequirements() { return requirements; }
