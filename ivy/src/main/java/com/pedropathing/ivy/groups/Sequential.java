@@ -7,12 +7,12 @@ import java.util.*;
 
 public class Sequential implements ICommand {
     protected ArrayDeque<ICommand> commands = new ArrayDeque<>();
-    protected List<Object> requirements;
+    protected List<Object> requirements = new ArrayList<>();
 
     public Sequential(ICommand... cmds) {
         commands.addAll(Arrays.asList(cmds));
 
-//        rebuildRequirements();
+        rebuildRequirements();
     }
 
     public Sequential() {

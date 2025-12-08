@@ -3,15 +3,16 @@ package com.pedropathing.ivy;
 import com.pedropathing.ivy.groups.Parallel;
 import com.pedropathing.ivy.groups.Sequential;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.BooleanSupplier;
 
 public class Command implements ICommand {
-    private List<Object> requirements;
+    private List<Object> requirements = new ArrayList<>();
     private Runnable execute, start, end;
     private BooleanSupplier done;
-    private Interruptibility interruptibility;
+    private Interruptibility interruptibility = Interruptibility.INTERRUPTIBLE;
 
     public void execute() {
         if (execute != null) {

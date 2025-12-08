@@ -5,42 +5,62 @@ import java.util.*;
 public class Scheduler {
     private static final Scheduler instance = new Scheduler();
     private LinkedList<ICommand> commands = new LinkedList<>();
-//    private HashMap<Object, ICommand> commandMap = new HashMap<>();
+    private HashMap<Object, ICommand> commandMap = new HashMap<>();
 
     public static Scheduler getInstance() {
         return instance;
     }
 
-//    private void remove(ICommand cmd) {
-//        commands.remove(cmd);
-//    }
+    private void remove(ICommand cmd) {
+        commands.remove(cmd);
+        removeRequirements(cmd);
+    }
+
+    private void removeRequirements(ICommand cmd) {
+        for (Object req : cmd.getRequirements()) {
+            commandMap.remove(req);
+        }
+    }
 
     public void schedule(ICommand... cmds) {
-        //            List<Object> requirements = cmd.getRequirements();
-        //            Object conflictObject = null;
-        //            for (Object req : requirements) {
-        //                if (commandMap.containsKey(req)) {
-        //                    conflictObject = req;
-        //                    break;
-        //                }
-        //            }
-        //            if (conflictObject != null) {
-        //                Interruptibility interruptibility = commandMap.get(conflictObject).getInterruptibility();
-        //
-        //                if (interruptibility == Interruptibility.INTERRUPTIBLE) {
-        //                    commandMap.get(conflictObject).end(true);
-        //                    remove(commandMap.get(conflictObject));
-        //                } else {
-        //                    continue;
-        //                }
-        //            }
-        //            for (Object req : cmd.getRequirements()) {
-        //                commandMap.put(req, cmd);
-        //            }
-        boolean wasEmpty = commands.isEmpty();
-        commands.addAll(Arrays.asList(cmds));
-        if (wasEmpty && !commands.isEmpty()) {
-            commands.getFirst().start();
+        for (ICommand cmd : cmds) {
+            List<Object> requirements = cmd.getRequirements();
+            List<Object> conflictObjects = new ArrayList<>();
+            for (Object req : requirements) {
+                if (commandMap.containsKey(req)) {
+                    conflictObjects.add(req);
+                }
+            }
+            if (!conflictObjects.isEmpty()) {
+                Interruptibility interruptibility = Interruptibility.INTERRUPTIBLE;
+                Set<ICommand> conflictingInterruptibleCommands = new HashSet<>();
+                for (Object conflictObject : conflictObjects) {
+                    ICommand conflictingCommand = commandMap.get(conflictObject);
+                    if (conflictingCommand.getInterruptibility() == Interruptibility.UNINTERRUPTIBLE) {
+                        interruptibility = Interruptibility.UNINTERRUPTIBLE;
+                        break;
+                    } else if (conflictingCommand.getInterruptibility() == Interruptibility.INTERRUPTIBLE) {
+                        conflictingInterruptibleCommands.add(conflictingCommand);
+                    }
+                }
+                if (interruptibility == Interruptibility.INTERRUPTIBLE) {
+                    for (ICommand conflictingCommand : conflictingInterruptibleCommands) {
+                        conflictingCommand.end(true);
+                        remove(conflictingCommand);
+                    }
+                    commands.add(cmd);
+                    cmd.start();
+                    for (Object req : cmd.getRequirements()) {
+                        commandMap.put(req, cmd);
+                    }
+                }
+            } else {
+                commands.add(cmd);
+                cmd.start();
+                for (Object req : cmd.getRequirements()) {
+                    commandMap.put(req, cmd);
+                }
+            }
         }
     }
 
@@ -50,9 +70,9 @@ public class Scheduler {
             while (it.hasNext()) {
                 ICommand command = it.next();
                 if (command.done()) {
+                    command.end(false);
+                    removeRequirements(command);
                     it.remove();
-                    if (!commands.isEmpty())
-                        commands.getFirst().start();
                 } else {
                     command.execute();
                 }
@@ -62,6 +82,7 @@ public class Scheduler {
 
     public void reset() {
         commands.clear();
+        commandMap.clear();
     }
 
 }
