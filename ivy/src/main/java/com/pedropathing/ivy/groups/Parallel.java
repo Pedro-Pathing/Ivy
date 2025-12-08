@@ -8,10 +8,8 @@ import java.util.*;
 public class Parallel implements ICommand {
     private LinkedList<ICommand> commands = new LinkedList<>();
     private List<Object> requirements = new ArrayList<>();
-
     public Parallel(ICommand... cmds) {
         commands.addAll(Arrays.asList(cmds));
-
         rebuildRequirements();
     }
 

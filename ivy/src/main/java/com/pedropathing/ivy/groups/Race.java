@@ -19,13 +19,24 @@ public class Race implements ICommand {
     public void execute() {
         if (!done()) {
             Iterator<ICommand> it = commands.iterator();
+            ICommand winner = null;
             while (it.hasNext()) {
                 ICommand command = it.next();
                 if (command.done()) {
                     raceCompleted = true;
+                    command.end(false);
+                    winner = command;
                     break;
                 } else {
                     command.execute();
+                }
+            }
+
+            if (raceCompleted) {
+                for (ICommand cmd : commands) {
+                    if (cmd != winner) {
+                        cmd.end(true);
+                    }
                 }
             }
         }
