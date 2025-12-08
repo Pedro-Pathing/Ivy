@@ -1,0 +1,28 @@
+package com.pedropathing.ivy.commands.follow;
+
+import com.pedropathing.follower.Follower;
+import com.pedropathing.geometry.BezierPoint;
+import com.pedropathing.geometry.Pose;
+import com.pedropathing.ivy.Command;
+import com.pedropathing.paths.HeadingInterpolator;
+import com.pedropathing.paths.Path;
+import com.pedropathing.paths.PathConstraints;
+
+public class Turn extends Command {
+    public Turn(Follower follower, double radians) {
+        this(follower, radians, follower.pathConstraints);
+    }
+
+    public Turn(Follower follower, double radians, PathConstraints constraints) {
+        setStart(() -> {
+            Pose pose = follower.getPose();
+            Path path = new Path(new BezierPoint(pose));
+            path.setHeadingInterpolation(HeadingInterpolator.constant(radians));
+            path.setConstraints(constraints);
+            follower.followPath(path);
+        });
+
+        setDone(() -> follower.getTranslationalError().getMagnitude() < constraints.getTranslationalConstraint() &&
+                follower.getHeadingError() < constraints.getHeadingConstraint());
+    }
+}
