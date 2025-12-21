@@ -75,7 +75,11 @@ public class Deadline implements ICommand {
     for (ICommand command : commands) {
       cmds[i++] = command.copy();
     }
-    return new Deadline(deadlineCommand.copy(), cmds);
+
+    ICommand[] all = new ICommand[cmds.length + 1];
+    all[0] = deadlineCommand.copy();
+    System.arraycopy(cmds, 0, all, 1, cmds.length);
+    return new Deadline(all);
   }
 
   @Override
