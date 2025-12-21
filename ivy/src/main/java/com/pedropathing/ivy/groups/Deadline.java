@@ -10,11 +10,13 @@ public class Deadline implements ICommand {
   private ICommand deadlineCommand;
   private List<Object> requirements = new ArrayList<>();
   private boolean done;
+  Interruptibility interruptibility = Interruptibility.INTERRUPTIBLE;
 
   public Deadline(ICommand... cmds) {
     deadlineCommand = cmds[0];
     commands.addAll(Arrays.asList(cmds).subList(1, cmds.length));
     rebuildRequirements();
+    generateInterruptibility();
   }
 
   @Override
@@ -51,7 +53,21 @@ public class Deadline implements ICommand {
 
   @Override
   public Interruptibility getInterruptibility() {
-    return Interruptibility.UNINTERRUPTIBLE;
+    return interruptibility;
+  }
+
+  protected void generateInterruptibility() {
+    if (deadlineCommand.getInterruptibility() == Interruptibility.UNINTERRUPTIBLE) {
+      interruptibility = Interruptibility.UNINTERRUPTIBLE;
+      return;
+    }
+
+    for (ICommand command : commands) {
+      if (command.getInterruptibility() == Interruptibility.UNINTERRUPTIBLE) {
+        interruptibility = Interruptibility.UNINTERRUPTIBLE;
+        return;
+      }
+    }
   }
 
   @Override
@@ -95,7 +111,7 @@ public class Deadline implements ICommand {
     return done;
   }
 
-  private void rebuildRequirements() {
+  protected void rebuildRequirements() {
     Set<Object> set = new HashSet<>();
     List<Object> deadlineRequirements = deadlineCommand.getRequirements();
     if (deadlineRequirements != null)
