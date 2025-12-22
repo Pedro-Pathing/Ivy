@@ -108,7 +108,8 @@ public class Scheduler {
 
   public void execute() {
     if (!commands.isEmpty()) {
-      Iterator<ICommand> it = commands.iterator();
+      List<ICommand> copy = new ArrayList<>(commands);
+      Iterator<ICommand> it = copy.iterator();
       while (it.hasNext()) {
         ICommand command = it.next();
         if (command.done()) {
