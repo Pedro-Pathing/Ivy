@@ -8,26 +8,33 @@ import com.pedropathing.ivy.groups.Sequential;
 import java.util.List;
 
 public interface ICommand {
-    List<Object> getRequirements();
-    Interruptibility getInterruptibility();
-    void start();
-    boolean done();
-    void execute();
-    void end(boolean interrupted);
-    ICommand copy();
+  List<Object> getRequirements();
 
-    default Sequential then(ICommand then) {
-        return new Sequential(this, then);
-    }
+  Chainability getChainability();
 
-    default Parallel with(ICommand with) {
-        return new Parallel(this, with);
-    }
+  Interruptibility getInterruptibility();
 
-    default Race timeoutAfter(int milliseconds) {
-        return new Race(
-                this,
-                new Wait(milliseconds)
-        );
-    }
+  void start();
+
+  boolean done();
+
+  void execute();
+
+  void end(boolean interrupted);
+
+  ICommand copy();
+
+  default Sequential then(ICommand then) {
+    return new Sequential(this, then);
+  }
+
+  default Parallel with(ICommand with) {
+    return new Parallel(this, with);
+  }
+
+  default Race timeoutAfter(int milliseconds) {
+    return new Race(
+        this,
+        new Wait(milliseconds));
+  }
 }

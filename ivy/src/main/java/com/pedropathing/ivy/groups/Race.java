@@ -1,5 +1,6 @@
 package com.pedropathing.ivy.groups;
 
+import com.pedropathing.ivy.Chainability;
 import com.pedropathing.ivy.ICommand;
 import com.pedropathing.ivy.Interruptibility;
 
@@ -10,6 +11,7 @@ public class Race implements ICommand {
   private List<Object> requirements = new ArrayList<>();
   protected boolean raceCompleted = false;
   private Interruptibility interruptibility = Interruptibility.INTERRUPTIBLE;
+  private Chainability chainability = Chainability.UNCHAINABLE;
 
   public Race(ICommand... cmds) {
     commands.addAll(Arrays.asList(cmds));
@@ -78,7 +80,7 @@ public class Race implements ICommand {
     for (ICommand command : commands) {
       cmds[i++] = command.copy();
     }
-    return new Race(cmds);
+    return new Race(cmds).setChainability(chainability);
   }
 
   @Override
@@ -101,5 +103,14 @@ public class Race implements ICommand {
   @Override
   public boolean done() {
     return raceCompleted;
+  }
+
+  public Chainability getChainability() {
+    return chainability;
+  }
+
+  public Race setChainability(Chainability chainability) {
+    this.chainability = chainability;
+    return this;
   }
 }

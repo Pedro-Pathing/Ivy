@@ -5,6 +5,7 @@ import com.pedropathing.ivy.ICommand;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import com.pedropathing.ivy.Chainability;
 
 public class Loop extends Sequential {
   public Loop(ICommand command, int iterations) {
@@ -15,5 +16,11 @@ public class Loop extends Sequential {
     commands.addAll(Arrays.asList(loops));
     rebuildRequirements();
     generateInterruptibility();
+  }
+
+  @Override
+  public Loop setChainability(Chainability chainability) {
+    super.setChainability(chainability);
+    return this;
   }
 }

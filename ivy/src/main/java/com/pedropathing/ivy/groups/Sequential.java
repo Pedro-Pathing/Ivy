@@ -2,6 +2,7 @@ package com.pedropathing.ivy.groups;
 
 import com.pedropathing.ivy.ICommand;
 import com.pedropathing.ivy.Interruptibility;
+import com.pedropathing.ivy.Chainability;
 
 import java.util.*;
 
@@ -9,6 +10,7 @@ public class Sequential implements ICommand {
   protected ArrayDeque<ICommand> commands = new ArrayDeque<>();
   protected List<Object> requirements = new ArrayList<>();
   private Interruptibility interruptibility = Interruptibility.INTERRUPTIBLE;
+  private Chainability chainability = Chainability.UNCHAINABLE;
 
   public Sequential(ICommand... cmds) {
     commands.addAll(Arrays.asList(cmds));
@@ -76,7 +78,7 @@ public class Sequential implements ICommand {
     for (ICommand command : commands) {
       cmds[i++] = command.copy();
     }
-    return new Sequential(cmds);
+    return new Sequential(cmds).setChainability(chainability);
   }
 
   @Override
@@ -101,5 +103,14 @@ public class Sequential implements ICommand {
         set.addAll(r);
     }
     requirements = new ArrayList<>(set);
+  }
+
+  public Chainability getChainability() {
+    return chainability;
+  }
+
+  public Sequential setChainability(Chainability chainability) {
+    this.chainability = chainability;
+    return this;
   }
 }

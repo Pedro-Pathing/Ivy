@@ -2,6 +2,7 @@ package com.pedropathing.ivy.groups;
 
 import com.pedropathing.ivy.ICommand;
 import com.pedropathing.ivy.Interruptibility;
+import com.pedropathing.ivy.Chainability;
 
 import java.util.*;
 
@@ -11,6 +12,7 @@ public class Deadline implements ICommand {
   private List<Object> requirements = new ArrayList<>();
   private boolean done;
   Interruptibility interruptibility = Interruptibility.INTERRUPTIBLE;
+  private Chainability chainability = Chainability.UNCHAINABLE;
 
   public Deadline(ICommand... cmds) {
     deadlineCommand = cmds[0];
@@ -95,7 +97,7 @@ public class Deadline implements ICommand {
     ICommand[] all = new ICommand[cmds.length + 1];
     all[0] = deadlineCommand.copy();
     System.arraycopy(cmds, 0, all, 1, cmds.length);
-    return new Deadline(all);
+    return new Deadline(all).setChainability(chainability);
   }
 
   @Override
@@ -123,4 +125,14 @@ public class Deadline implements ICommand {
     }
     requirements = new ArrayList<>(set);
   }
+
+  public Deadline setChainability(Chainability chainability) {
+    this.chainability = chainability;
+    return this;
+  }
+
+  public Chainability getChainability() {
+    return chainability;
+  }
+
 }

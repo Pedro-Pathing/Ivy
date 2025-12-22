@@ -1,5 +1,6 @@
 package com.pedropathing.ivy.groups;
 
+import com.pedropathing.ivy.Chainability;
 import com.pedropathing.ivy.ICommand;
 import com.pedropathing.ivy.Interruptibility;
 
@@ -9,6 +10,7 @@ public class Parallel implements ICommand {
   private LinkedList<ICommand> commands = new LinkedList<>();
   private List<Object> requirements = new ArrayList<>();
   private Interruptibility interruptibility = Interruptibility.INTERRUPTIBLE;
+  private Chainability chainability = Chainability.UNCHAINABLE;
 
   public Parallel(ICommand... cmds) {
     commands.addAll(Arrays.asList(cmds));
@@ -66,7 +68,7 @@ public class Parallel implements ICommand {
     for (ICommand command : commands) {
       cmds[i++] = command.copy();
     }
-    return new Parallel(cmds);
+    return new Parallel(cmds).setChainability(chainability);
   }
 
   @Override
@@ -89,5 +91,14 @@ public class Parallel implements ICommand {
         set.addAll(r);
     }
     requirements = new ArrayList<>(set);
+  }
+
+  public Parallel setChainability(Chainability chainability) {
+    this.chainability = chainability;
+    return this;
+  }
+
+  public Chainability getChainability() {
+    return chainability;
   }
 }
