@@ -39,7 +39,8 @@ public class Follow extends Command {
     }
 
     /**
-     * Decides whether or not to make the robot maintain its position once the path ends.
+     * Decides whether or not to make the robot maintain its position once the path
+     * ends.
      *
      * @param holdEnd If the robot should maintain its ending position
      * @return This command for compatibility in command groups
@@ -51,6 +52,7 @@ public class Follow extends Command {
 
     /**
      * Sets the follower's maximum power
+     * 
      * @param power Between 0 and 1
      * @return This command for compatibility in command groups
      */
@@ -58,16 +60,17 @@ public class Follow extends Command {
         this.maxPower = power;
         return this;
     }
-    
+
     public void start() {
         follower.followPath(path, maxPower, holdEnd);
     }
-    
+
     @Override
     public boolean done() {
         return !follower.isBusy();
     }
 
     @Override
-    public void end(boolean interrupted) {}
+    public void end(boolean interrupted) {
+    }
 }

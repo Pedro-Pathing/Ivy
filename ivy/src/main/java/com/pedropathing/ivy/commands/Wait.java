@@ -5,6 +5,7 @@ import com.pedropathing.util.Timer;
 
 public class Wait extends Command {
     Timer timer = new Timer();
+
     public Wait(double milliseconds) {
         super.setStart(() -> timer.resetTimer());
         super.setDone(() -> timer.getElapsedTime() >= milliseconds);

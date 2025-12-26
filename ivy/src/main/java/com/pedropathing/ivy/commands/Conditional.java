@@ -1,6 +1,5 @@
 package com.pedropathing.ivy.commands;
 
-import com.pedropathing.ivy.Chainability;
 import com.pedropathing.ivy.Command;
 import com.pedropathing.ivy.ICommand;
 import java.util.function.BooleanSupplier;

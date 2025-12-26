@@ -8,19 +8,19 @@ import java.util.HashSet;
 import com.pedropathing.ivy.Chainability;
 
 public class Loop extends Sequential {
-  public Loop(ICommand command, int iterations) {
-    ICommand[] loops = new ICommand[iterations];
-    for (int i = 0; i < iterations; i++) {
-      loops[i] = command.copy();
+    public Loop(ICommand command, int iterations) {
+        ICommand[] loops = new ICommand[iterations];
+        for (int i = 0; i < iterations; i++) {
+            loops[i] = command.copy();
+        }
+        commands.addAll(Arrays.asList(loops));
+        rebuildRequirements();
+        generateInterruptibility();
     }
-    commands.addAll(Arrays.asList(loops));
-    rebuildRequirements();
-    generateInterruptibility();
-  }
 
-  @Override
-  public Loop setChainability(Chainability chainability) {
-    super.setChainability(chainability);
-    return this;
-  }
+    @Override
+    public Loop setChainability(Chainability chainability) {
+        super.setChainability(chainability);
+        return this;
+    }
 }
