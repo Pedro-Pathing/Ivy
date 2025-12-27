@@ -111,4 +111,16 @@ public class Command implements ICommand {
         copy.setChainability(this.chainability);
         return copy;
     }
+
+
+    protected void adoptBehavior(ICommand v) {
+        v.start();
+        setExecute(v::execute);
+        setEnd(v::end);
+        setDone(v::done);
+        setInterruptibility(v.getInterruptibility());
+        setChainability(v.getChainability());
+        if (v.getRequirements() != null)
+            setRequirements(v.getRequirements().toArray());
+    }
 }

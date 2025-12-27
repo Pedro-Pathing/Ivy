@@ -7,6 +7,12 @@ import com.pedropathing.ivy.groups.Sequential;
 
 import java.util.List;
 
+/**
+ * Command Interface that all types implement
+ * @version 1.0
+ * @author Baron Henderson
+ * @author Kabir Goyal
+ */
 public interface ICommand {
     List<Object> getRequirements();
 

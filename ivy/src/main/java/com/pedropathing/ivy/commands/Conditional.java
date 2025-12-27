@@ -25,16 +25,6 @@ public class Conditional extends Command {
         adoptBehavior(option2);
     }
 
-    private void adoptBehavior(ICommand v) {
-        v.start();
-        setExecute(v::execute);
-        setEnd(v::end);
-        setDone(v::done);
-        setInterruptibility(v.getInterruptibility());
-        setChainability(v.getChainability());
-        if (v.getRequirements() != null)
-            setRequirements(v.getRequirements().toArray());
-    }
 
     @Override
     public Conditional copy() {

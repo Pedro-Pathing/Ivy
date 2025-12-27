@@ -25,17 +25,6 @@ public class Optional extends Command {
         setDone(() -> true);
     }
 
-    private void adoptBehavior(ICommand v) {
-        v.start();
-        setExecute(v::execute);
-        setEnd(v::end);
-        setDone(v::done);
-        setInterruptibility(v.getInterruptibility());
-        setChainability(v.getChainability());
-        if (v.getRequirements() != null)
-            setRequirements(v.getRequirements().toArray());
-    }
-
     @Override
     public Optional copy() {
         LinkedHashMap<BooleanSupplier, ICommand> copiedCommands = new LinkedHashMap<>();
