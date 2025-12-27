@@ -17,7 +17,7 @@ import java.util.function.BooleanSupplier;
  * @author Havish Sripada
  * @author Kabir Goyal
  */
-public class Optional extends Command {
+public class Branch extends Command {
     private final LinkedHashMap<BooleanSupplier, ICommand> commands;
 
     /**
@@ -29,7 +29,7 @@ public class Optional extends Command {
      *                 The order of insertion determines the priority of the
      *                 commands.
      */
-    public Optional(LinkedHashMap<BooleanSupplier, ICommand> commands) {
+    public Branch(LinkedHashMap<BooleanSupplier, ICommand> commands) {
         this.commands = commands;
     }
 
@@ -56,11 +56,11 @@ public class Optional extends Command {
      * @return a new Optional command with copies of the original commands
      */
     @Override
-    public Optional copy() {
+    public Branch copy() {
         LinkedHashMap<BooleanSupplier, ICommand> copiedCommands = new LinkedHashMap<>();
         for (Map.Entry<BooleanSupplier, ICommand> entry : commands.entrySet()) {
             copiedCommands.put(entry.getKey(), entry.getValue().copy());
         }
-        return new Optional(copiedCommands);
+        return new Branch(copiedCommands);
     }
 }
