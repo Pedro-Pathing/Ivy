@@ -2,9 +2,9 @@ package com.pedropathing.ivy.groups;
 
 import com.pedropathing.ivy.ICommand;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
+import java.util.function.IntSupplier;
+
 import com.pedropathing.ivy.Chainability;
 
 /**
@@ -12,10 +12,12 @@ import com.pedropathing.ivy.Chainability;
  * specified number iterations.
  * 
  * @version 1.0
- * @author Baron Henderson
  * @author Kabir Goyal
  */
 public class Loop extends Sequential {
+    IntSupplier iterationsSupplier;
+    ICommand command;
+
     /**
      * Constructs a new Loop command group that runs the given command for the
      * specified number of iterations.
@@ -24,24 +26,41 @@ public class Loop extends Sequential {
      * @param iterations the number of times to run the command
      */
     public Loop(ICommand command, int iterations) {
-        ICommand[] loops = new ICommand[iterations];
-        for (int i = 0; i < iterations; i++) {
-            loops[i] = command.copy();
-        }
-        commands.addAll(Arrays.asList(loops));
-        rebuildRequirements();
-        generateInterruptibility();
+        this(command, () -> iterations);
     }
 
     /**
-     * Constructs a new Loop command group that runs the given command
-     * indefinitely until interrupted.
+     * Constructs a new Loop command group that runs the given command for the
+     * specified number of iterations supplied by the given IntSupplier.
      * 
-     * @param command the command to run in a loop
+     * @param command            the command to run in a loop
+     * @param iterationsSupplier the supplier that provides the number of times to
+     *                           run the command
      */
+    public Loop(ICommand command, IntSupplier iterationsSupplier) {
+        this.command = command;
+        this.iterationsSupplier = iterationsSupplier;
+    }
+
+    @Override
+    public void start() {
+        int iterations = iterationsSupplier.getAsInt();
+        ICommand[] repeatedCommands = new ICommand[iterations];
+        for (int i = 0; i < iterations; i++) {
+            repeatedCommands[i] = command.copy();
+        }
+        commands.addAll(Arrays.asList(repeatedCommands));
+        super.start();
+    }
+
     @Override
     public Loop setChainability(Chainability chainability) {
         super.setChainability(chainability);
         return this;
+    }
+
+    @Override
+    public Loop copy() {
+        return new Loop(command.copy(), iterationsSupplier);
     }
 }
