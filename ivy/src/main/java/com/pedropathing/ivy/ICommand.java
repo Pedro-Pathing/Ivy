@@ -5,6 +5,7 @@ import com.pedropathing.ivy.groups.Parallel;
 import com.pedropathing.ivy.groups.Race;
 import com.pedropathing.ivy.groups.Sequential;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -82,4 +83,40 @@ public interface ICommand {
                 this,
                 new Wait(milliseconds));
     }
+
+    public static ICommand noop = new ICommand() {
+        @Override
+        public List<Object> getRequirements() {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public Chainability getChainability() {
+            return Chainability.UNCHAINABLE;
+        }
+
+        @Override
+        public Interruptibility getInterruptibility() {
+            return Interruptibility.INTERRUPTIBLE;
+        }
+
+        @Override
+        public void start() { }
+
+        @Override
+        public boolean done() {
+            return true;
+        }
+
+        @Override
+        public void execute() { }
+
+        @Override
+        public void end(boolean interrupted) { }
+
+        @Override
+        public ICommand copy() {
+            return this;
+        }
+    };
 }
