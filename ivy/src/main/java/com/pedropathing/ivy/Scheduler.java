@@ -7,26 +7,55 @@ import com.pedropathing.ivy.groups.Sequential;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * The Scheduler is responsible for managing and executing commands.
+ * It ensures that commands are scheduled according to their requirements,
+ * interruptibility, and chainability.
+ * 
+ * @version 1.0
+ * @author Baron Henderson
+ * @author Kabir Goyal
+ */
 public class Scheduler {
     private static final Scheduler instance = new Scheduler();
     private LinkedList<ICommand> commands = new LinkedList<>();
     private HashMap<Object, ICommand> commandMap = new HashMap<>();
 
+    /**
+     * Gets the singleton instance of the Scheduler
+     * 
+     * @return
+     */
     public static Scheduler getInstance() {
         return instance;
     }
 
+    /**
+     * Removes a command from the scheduler
+     * 
+     * @param cmd command to be removed
+     */
     private void remove(ICommand cmd) {
         commands.remove(cmd);
         removeRequirements(cmd);
     }
 
+    /**
+     * Removes the requirements of a command from the command map
+     * 
+     * @param cmd command whose requirements are to be removed
+     */
     private void removeRequirements(ICommand cmd) {
         for (Object req : cmd.getRequirements()) {
             commandMap.remove(req);
         }
     }
 
+    /**
+     * Schedules one or more commands for execution <b>in parallel</b>
+     * 
+     * @param cmds commands to be scheduled
+     */
     public void schedule(ICommand... cmds) {
         for (ICommand cmd : cmds) {
             List<Object> requirements = cmd.getRequirements();
@@ -107,6 +136,11 @@ public class Scheduler {
         }
     }
 
+    /**
+     * Executes all scheduled commands <b>in parallel</b>. This method should be
+     * called
+     * periodically
+     */
     public void execute() {
         if (!commands.isEmpty()) {
             List<ICommand> copy = new ArrayList<>(commands);
@@ -124,6 +158,9 @@ public class Scheduler {
         }
     }
 
+    /**
+     * Resets the scheduler by clearing all scheduled commands
+     */
     public void reset() {
         commands.clear();
         commandMap.clear();
