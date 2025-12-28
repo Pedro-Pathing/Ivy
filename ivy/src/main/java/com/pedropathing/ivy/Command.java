@@ -65,5 +65,9 @@ public interface Command {
         return new CommandBuilder();
     }
 
+    default void schedule() {
+        Scheduler.schedule(this);
+    }
+
     // TODO: chaining utilities
 }
