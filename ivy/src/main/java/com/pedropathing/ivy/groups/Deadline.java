@@ -32,6 +32,7 @@ public class Deadline implements ICommand {
      *             deadline
      */
     public Deadline(ICommand... cmds) {
+        if (cmds.length < 1) throw new IllegalArgumentException("Cannot make empty deadline group");
         deadlineCommand = cmds[0];
         for (int i = 1; i < cmds.length; i++) {
             commands.put(cmds[i], false);

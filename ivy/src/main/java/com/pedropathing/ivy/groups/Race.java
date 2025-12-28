@@ -139,7 +139,7 @@ public class Race implements ICommand {
      *         Not to be called by the user directly, use a scheduler instead.
      */
     public boolean done() {
-        return raceCompleted;
+        return commands.isEmpty() || raceCompleted;
     }
 
     /**
