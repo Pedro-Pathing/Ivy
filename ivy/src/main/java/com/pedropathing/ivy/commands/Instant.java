@@ -1,7 +1,5 @@
 package com.pedropathing.ivy.commands;
 
-import com.pedropathing.ivy.Command;
-
 /**
  * A command that runs a given runnable instantly and then finishes.
  * 
@@ -9,7 +7,7 @@ import com.pedropathing.ivy.Command;
  * @author Baron Henderson
  * @author Kabir Goyal
  */
-public class Instant extends Command {
+public class Instant extends CommandClass {
     /**
      * Constructs a new Instant command that runs the given runnable
      * instantly and then finishes.

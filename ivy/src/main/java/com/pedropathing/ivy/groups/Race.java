@@ -1,163 +1,77 @@
 package com.pedropathing.ivy.groups;
 
-import com.pedropathing.ivy.Chainability;
-import com.pedropathing.ivy.ICommand;
-import com.pedropathing.ivy.Interruptibility;
+import com.pedropathing.ivy.Command;
+import com.pedropathing.ivy.CommandBuilder;
+import com.pedropathing.ivy.behaviors.EndCondition;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * A command group that runs multiple commands in parallel and completes when
  * the first command finishes. The remaining commands are then interrupted.
- * 
- * @version 1.0
+ *
+ * @author Baron Henderson
  * @author Kabir Goyal
+ * @version 1.0
  */
-public class Race implements ICommand {
-    private LinkedList<ICommand> commands = new LinkedList<>();
-    private List<Object> requirements = new ArrayList<>();
-    protected boolean raceCompleted = false;
-    private Interruptibility interruptibility = Interruptibility.INTERRUPTIBLE;
-    private Chainability chainability = Chainability.UNCHAINABLE;
+public class Race extends CommandBuilder {
+    private final Map<Command, Boolean> commands = new HashMap<>();
+    private boolean raceCompleted = false;
 
     /**
      * Constructs a new Race group with the passed in commands
+     *
+     * @param children the commands to run in parallel
      */
-    public Race(ICommand... cmds) {
-        commands.addAll(Arrays.asList(cmds));
-        rebuildRequirements();
-        generateInterruptibility();
-    }
+    public Race(Command... children) {
+        Arrays.stream(children).forEach(command -> commands.put(command, false));
 
-    /**
-     * Runs all commands in parallel until one completes, then ends the others.
-     * Not to be called by the user directly, use a scheduler instead.
-     */
-    public void execute() {
-        if (!done()) {
-            Iterator<ICommand> it = commands.iterator();
-            ICommand winner = null;
-            while (it.hasNext()) {
-                ICommand command = it.next();
+        requiring(
+                Arrays.stream(children)
+                        .flatMap(command -> command.requirements().stream())
+                        .collect(Collectors.toSet())
+        );
+
+        setPriority(Arrays.stream(children).mapToInt(Command::priority).max().orElse(0));
+
+        setExecute(() -> {
+            if (done()) return;
+
+            for (Command command : commands.keySet()) {
                 if (command.done()) {
                     raceCompleted = true;
-                    command.end(false);
-                    winner = command;
+                    command.end(EndCondition.NATURALLY);
+                    commands.put(command, true);
                     break;
-                } else {
-                    command.execute();
                 }
+                command.execute();
             }
 
             if (raceCompleted) {
-                for (ICommand cmd : commands) {
-                    if (cmd != winner) {
-                        cmd.end(true);
-                    }
-                }
+                commands.entrySet().stream()
+                        .filter(entry -> !entry.getValue())
+                        .forEach(entry -> entry.getKey().end(EndCondition.INTERRUPTED));
             }
-        }
-    }
+        });
 
-    /**
-     * @return the list of requirements for this command group
-     */
-    public List<Object> getRequirements() {
-        return requirements;
-    }
+        setEnd(endCondition -> {
+            if (raceCompleted) return;
+            commands.entrySet().stream()
+                    .filter(entry -> !entry.getValue())
+                    .forEach(entry -> entry.getKey().end(endCondition));
+        });
 
-    /**
-     * @return the interruptibility of this command group
-     */
-    public Interruptibility getInterruptibility() {
-        return interruptibility;
-    }
+        setStart(() -> {
+            raceCompleted = false;
+            commands.keySet().forEach(command -> {
+                commands.put(command, false);
+                command.start();
+            });
+        });
 
-    /**
-     * Sets the interruptibility of this command group based on its subcommands
-     */
-    protected void generateInterruptibility() {
-        for (ICommand command : commands) {
-            if (command.getInterruptibility() == Interruptibility.UNINTERRUPTIBLE) {
-                interruptibility = Interruptibility.UNINTERRUPTIBLE;
-                return;
-            }
-        }
-    }
-
-    /**
-     * Ends all commands in this group
-     * 
-     * @param interrupted whether the commands were interrupted
-     *                    Not to be called by the user directly, use a scheduler
-     *                    instead.
-     */
-    public void end(boolean interrupted) {
-        for (ICommand command : commands) {
-            command.end(interrupted);
-        }
-    }
-
-    /**
-     * @return a copy of this Race command group with copies of all its subcommands
-     */
-    public ICommand copy() {
-        ICommand[] cmds = new ICommand[commands.size()];
-        int i = 0;
-        for (ICommand command : commands) {
-            cmds[i++] = command.copy();
-        }
-        return new Race(cmds).setChainability(chainability);
-    }
-
-    /**
-     * Starts all commands in this group
-     * Not to be called by the user directly, use a scheduler instead.
-     */
-    public void start() {
-        raceCompleted = false;
-        for (ICommand command : commands) {
-            command.start();
-        }
-    }
-
-    /**
-     * Rebuilds the requirements list based on the current subcommands
-     */
-    protected void rebuildRequirements() {
-        Set<Object> set = new HashSet<>();
-        for (ICommand command : commands) {
-            List<Object> r = command.getRequirements();
-            if (r != null)
-                set.addAll(r);
-        }
-        requirements = new ArrayList<>(set);
-    }
-
-    /**
-     * @return whether any command in the group has completed
-     *         Not to be called by the user directly, use a scheduler instead.
-     */
-    public boolean done() {
-        return commands.isEmpty() || raceCompleted;
-    }
-
-    /**
-     * @return the chainability of this command group
-     *         Not to be called by the user directly, use a scheduler instead.
-     */
-    public Chainability getChainability() {
-        return chainability;
-    }
-
-    /**
-     * Sets the chainability of this command group
-     * 
-     * @param chainability the chainability to set
-     * @return this, so setters can be chained
-     */
-    public Race setChainability(Chainability chainability) {
-        this.chainability = chainability;
-        return this;
+        setDone(() -> raceCompleted || commands.isEmpty());
     }
 }

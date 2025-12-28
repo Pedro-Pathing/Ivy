@@ -1,7 +1,6 @@
 package com.pedropathing.ivy.commands.follow;
 
 import com.pedropathing.follower.Follower;
-import com.pedropathing.ivy.Command;
 import com.pedropathing.paths.PathChain;
 
 /**
@@ -11,7 +10,7 @@ import com.pedropathing.paths.PathChain;
  * @author Baron Henderson
  * @author Havish Sripada
  */
-public class Follow extends Command {
+public class Follow extends CommandClass {
     private final Follower follower;
     private final PathChain path;
     private boolean holdEnd;

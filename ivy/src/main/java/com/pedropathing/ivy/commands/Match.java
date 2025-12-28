@@ -1,7 +1,6 @@
 package com.pedropathing.ivy.commands;
 
 import com.pedropathing.ivy.Command;
-import com.pedropathing.ivy.ICommand;
 
 import java.util.EnumMap;
 import java.util.function.Supplier;
@@ -13,10 +12,10 @@ import java.util.function.Supplier;
  * @version 1.0
  * @author Kabir Goyal
  */
-public class Match<T extends Enum<T>> extends Command {
+public class Match<T extends Enum<T>> extends CommandClass {
     private Supplier<T> stateSupplier;
     private T state;
-    private EnumMap<T, ICommand> cases;
+    private EnumMap<T, Command> cases;
 
     /**
      * Constructs a new Match command that selects a command to run based on
@@ -26,7 +25,7 @@ public class Match<T extends Enum<T>> extends Command {
      *                      provides the current enum state
      * @param cases         an EnumMap mapping enum branches to commands
      */
-    public Match(Supplier<T> stateSupplier, EnumMap<T, ICommand> cases) {
+    public Match(Supplier<T> stateSupplier, EnumMap<T, Command> cases) {
         this.stateSupplier = stateSupplier;
         this.cases = cases;
     }
@@ -53,7 +52,7 @@ public class Match<T extends Enum<T>> extends Command {
      */
     @Override
     public Match<T> copy() {
-        EnumMap<T, ICommand> copiedCases = cases.clone();
+        EnumMap<T, Command> copiedCases = cases.clone();
         copiedCases.replaceAll((k, v) -> v.copy());
         return new Match<>(stateSupplier, copiedCases);
     }

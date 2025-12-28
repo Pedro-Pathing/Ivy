@@ -1,6 +1,5 @@
 package com.pedropathing.ivy.commands;
 
-import com.pedropathing.ivy.Command;
 import com.pedropathing.util.Timer;
 
 /**
@@ -10,7 +9,7 @@ import com.pedropathing.util.Timer;
  * @author Baron Henderson
  * @author Kabir Goyal
  */
-public class Wait extends Command {
+public class Wait extends CommandClass {
     Timer timer = new Timer();
 
     /**

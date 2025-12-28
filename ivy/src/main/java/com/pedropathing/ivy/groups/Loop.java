@@ -1,11 +1,8 @@
 package com.pedropathing.ivy.groups;
 
-import com.pedropathing.ivy.ICommand;
+import com.pedropathing.ivy.Command;
 
-import java.util.Arrays;
 import java.util.function.IntSupplier;
-
-import com.pedropathing.ivy.Chainability;
 
 /**
  * A command group that runs a command multiple times in sequence for a
@@ -16,7 +13,7 @@ import com.pedropathing.ivy.Chainability;
  */
 public class Loop extends Sequential {
     IntSupplier iterationsSupplier;
-    ICommand command;
+    Command command;
 
     /**
      * Constructs a new Loop command group that runs the given command for the
@@ -25,7 +22,7 @@ public class Loop extends Sequential {
      * @param command    the command to run in a loop
      * @param iterations the number of times to run the command
      */
-    public Loop(ICommand command, int iterations) {
+    public Loop(Command command, int iterations) {
         this(command, () -> iterations);
     }
 
@@ -37,7 +34,7 @@ public class Loop extends Sequential {
      * @param iterationsSupplier the supplier that provides the number of times to
      *                           run the command
      */
-    public Loop(ICommand command, IntSupplier iterationsSupplier) {
+    public Loop(Command command, IntSupplier iterationsSupplier) {
         this.command = command;
         this.iterationsSupplier = iterationsSupplier;
     }
@@ -45,7 +42,7 @@ public class Loop extends Sequential {
     @Override
     public void start() {
         int iterations = iterationsSupplier.getAsInt();
-        ICommand[] repeatedCommands = new ICommand[iterations];
+        Command[] repeatedCommands = new Command[iterations];
         for (int i = 0; i < iterations; i++) {
             repeatedCommands[i] = command.copy();
         }
