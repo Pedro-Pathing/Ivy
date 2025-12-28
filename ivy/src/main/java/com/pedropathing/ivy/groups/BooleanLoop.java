@@ -14,7 +14,7 @@ import java.util.function.BooleanSupplier;
  * @version 1.0
  * @author Kabir Goyal
  */
-public class Lazy extends Command {
+public class BooleanLoop extends Command {
     AtomicReference<Command> repeatedCommandReference = new AtomicReference<>(new Command());
 
     /**
@@ -23,7 +23,7 @@ public class Lazy extends Command {
      * @param endCondition the condition to check before each iteration
      * @param c            the command to run repeatedly
      */
-    public Lazy(BooleanSupplier endCondition, ICommand c) {
+    public BooleanLoop(BooleanSupplier endCondition, ICommand c) {
         Command repeatedCommand = new Command();
         repeatedCommand.adoptBehaviorWithoutStarting(c);
         repeatedCommand.setEnd(
