@@ -52,6 +52,6 @@ public class BooleanLoop extends Command {
      */
     @Override
     public boolean done() {
-        return true;
+        return endCondition.getAsBoolean();
     }
 }
