@@ -217,8 +217,13 @@ public class Command implements ICommand {
      * 
      * @param v the ICommand to adopt behavior from
      */
-    public void adoptBehavior(ICommand v) {
-        v.start();
+    public void adoptBehavior(ICommand v, boolean startNow) {
+        if (startNow)
+            setStart(() -> {
+                v.start();
+            });
+        else
+            setStart(v::start);
         setExecute(v::execute);
         setEnd(v::end);
         setDone(v::done);
@@ -228,20 +233,7 @@ public class Command implements ICommand {
             setRequirements(v.getRequirements().toArray());
     }
 
-    /**
-     * Adopts the behavior of another ICommand.
-     * Don't use this method directly; it's intended for use in other Ivy Classes.
-     * 
-     * @param v the ICommand to adopt behavior from
-     */
-    public void adoptBehaviorWithoutStarting(ICommand v) {
-        setStart(v::start);
-        setExecute(v::execute);
-        setEnd(v::end);
-        setDone(v::done);
-        setInterruptibility(v.getInterruptibility());
-        setChainability(v.getChainability());
-        if (v.getRequirements() != null)
-            setRequirements(v.getRequirements().toArray());
+    public void adoptBehavior(ICommand v) {
+        adoptBehavior(v, false);
     }
 }

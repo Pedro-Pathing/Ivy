@@ -27,7 +27,7 @@ public class BooleanLoop extends Command {
     public BooleanLoop(BooleanSupplier endCondition, ICommand c) {
         Command repeatedCommand = new Command();
         this.endCondition = endCondition;
-        repeatedCommand.adoptBehaviorWithoutStarting(c);
+        repeatedCommand.adoptBehavior(c, true);
         repeatedCommand.setEnd(
                 (interrupted) -> {
                     c.end(interrupted);
