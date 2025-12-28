@@ -14,8 +14,6 @@ import java.util.function.Consumer;
  * @author Kabir Goyal
  */
 public class Command implements ICommand {
-    public static final Command NOOP = new Command();
-
     private List<Object> requirements = new ArrayList<>();
     private Runnable execute, start;
     private Consumer<Boolean> end;
