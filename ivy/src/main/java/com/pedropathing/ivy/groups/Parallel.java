@@ -14,10 +14,11 @@ import java.util.*;
  * @author Kabir Goyal
  */
 public class Parallel implements ICommand {
-    private LinkedList<ICommand> commands = new LinkedList<>();
+    protected HashMap<ICommand, Boolean> commands = new HashMap<>();
     private List<Object> requirements = new ArrayList<>();
     private Interruptibility interruptibility = Interruptibility.INTERRUPTIBLE;
     private Chainability chainability = Chainability.UNCHAINABLE;
+    private int numCompleted = 0;
 
     /**
      * Constructs a new Parallel command group with the passed in commands
@@ -25,25 +26,28 @@ public class Parallel implements ICommand {
      * @param cmds the commands to run in parallel
      */
     public Parallel(ICommand... cmds) {
-        commands.addAll(Arrays.asList(cmds));
+        for (ICommand cmd : cmds) {
+            commands.put(cmd, false);
+        }
         rebuildRequirements();
         generateInterruptibility();
     }
 
     /**
-     * Constructs an empty Parallel command group
-     * Not to be called by the user directly, use a scheduler instead.
+     * Runs all commands in parallel. Not to be called by the user directly, use a
+     * scheduler instead.
      */
     public void execute() {
         if (!done()) {
-            Iterator<ICommand> it = commands.iterator();
-            while (it.hasNext()) {
-                ICommand command = it.next();
-                if (command.done()) {
-                    command.end(false);
-                    it.remove();
-                } else {
-                    command.execute();
+            for (ICommand command : commands.keySet()) {
+                if (!commands.get(command)) {
+                    if (command.done()) {
+                        command.end(false);
+                        numCompleted++;
+                        commands.put(command, true);
+                    } else {
+                        command.execute();
+                    }
                 }
             }
         }
@@ -68,7 +72,7 @@ public class Parallel implements ICommand {
      * Generates the interruptibility of this command group based on its subcommands
      */
     protected void generateInterruptibility() {
-        for (ICommand command : commands) {
+        for (ICommand command : commands.keySet()) {
             if (command.getInterruptibility() == Interruptibility.UNINTERRUPTIBLE) {
                 interruptibility = Interruptibility.UNINTERRUPTIBLE;
                 return;
@@ -83,10 +87,11 @@ public class Parallel implements ICommand {
      * @param interrupted whether the command was interrupted or ended normally
      */
     public void end(boolean interrupted) {
-        for (ICommand command : commands) {
-            command.end(interrupted);
+        for (ICommand command : commands.keySet()) {
+            if (!commands.get(command)) {
+                command.end(interrupted);
+            }
         }
-        commands.clear();
     }
 
     /**
@@ -95,7 +100,7 @@ public class Parallel implements ICommand {
     public ICommand copy() {
         ICommand[] cmds = new ICommand[commands.size()];
         int i = 0;
-        for (ICommand command : commands) {
+        for (ICommand command : commands.keySet()) {
             cmds[i++] = command.copy();
         }
         return new Parallel(cmds).setChainability(this.chainability);
@@ -106,7 +111,9 @@ public class Parallel implements ICommand {
      * Not to be called by the user directly, use a scheduler instead.
      */
     public void start() {
-        for (ICommand command : commands) {
+        numCompleted = 0;
+        for (ICommand command : commands.keySet()) {
+            commands.put(command, false);
             command.start();
         }
     }
@@ -118,7 +125,7 @@ public class Parallel implements ICommand {
      *         executing
      */
     public boolean done() {
-        return commands.isEmpty();
+        return numCompleted >= commands.size();
     }
 
     /**
@@ -127,7 +134,7 @@ public class Parallel implements ICommand {
      */
     protected void rebuildRequirements() {
         Set<Object> set = new HashSet<>();
-        for (ICommand command : commands) {
+        for (ICommand command : commands.keySet()) {
             List<Object> r = command.getRequirements();
             if (r != null)
                 set.addAll(r);

@@ -49,7 +49,7 @@ public class Loop extends Sequential {
         for (int i = 0; i < iterations; i++) {
             repeatedCommands[i] = command.copy();
         }
-        commands.addAll(Arrays.asList(repeatedCommands));
+        commands = repeatedCommands;
         super.start();
     }
 

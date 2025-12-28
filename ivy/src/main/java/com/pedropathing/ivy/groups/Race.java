@@ -96,7 +96,6 @@ public class Race implements ICommand {
         for (ICommand command : commands) {
             command.end(interrupted);
         }
-        commands.clear();
     }
 
     /**
@@ -116,6 +115,7 @@ public class Race implements ICommand {
      * Not to be called by the user directly, use a scheduler instead.
      */
     public void start() {
+        raceCompleted = false;
         for (ICommand command : commands) {
             command.start();
         }

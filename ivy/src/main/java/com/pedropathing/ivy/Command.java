@@ -63,7 +63,7 @@ public class Command implements ICommand {
         if (done != null) {
             return done.getAsBoolean();
         }
-        return false;
+        return true;
     }
 
     /**

@@ -17,10 +17,11 @@ import java.util.*;
  * @author Kabir Goyal
  */
 public class Deadline implements ICommand {
-    private LinkedList<ICommand> commands = new LinkedList<>();
+    private HashMap<ICommand, Boolean> commands = new HashMap<>();
     private ICommand deadlineCommand;
     private List<Object> requirements = new ArrayList<>();
     private boolean done;
+    private int numCompleted = 0;
     Interruptibility interruptibility = Interruptibility.INTERRUPTIBLE;
     private Chainability chainability = Chainability.UNCHAINABLE;
 
@@ -33,7 +34,9 @@ public class Deadline implements ICommand {
      */
     public Deadline(ICommand... cmds) {
         deadlineCommand = cmds[0];
-        commands.addAll(Arrays.asList(cmds).subList(1, cmds.length));
+        for (int i = 1; i < cmds.length; i++) {
+            commands.put(cmds[i], false);
+        }
         rebuildRequirements();
         generateInterruptibility();
     }
@@ -48,22 +51,24 @@ public class Deadline implements ICommand {
             if (deadlineCommand.done()) {
                 done = true;
                 deadlineCommand.end(false);
-                for (ICommand command : commands) {
-                    command.end(true);
+                for (ICommand command : commands.keySet()) {
+                    if (!commands.get(command)) {
+                        command.end(true);
+                    }
                 }
-                commands.clear();
                 return;
             }
             deadlineCommand.execute();
 
-            Iterator<ICommand> it = commands.iterator();
-            while (it.hasNext()) {
-                ICommand command = it.next();
-                if (command.done()) {
-                    command.end(false);
-                    it.remove();
-                } else {
-                    command.execute();
+            for (ICommand command : commands.keySet()) {
+                if (!commands.get(command)) {
+                    if (command.done()) {
+                        command.end(false);
+                        numCompleted++;
+                        commands.put(command, true);
+                    } else {
+                        command.execute();
+                    }
                 }
             }
         }
@@ -92,7 +97,7 @@ public class Deadline implements ICommand {
             return;
         }
 
-        for (ICommand command : commands) {
+        for (ICommand command : commands.keySet()) {
             if (command.getInterruptibility() == Interruptibility.UNINTERRUPTIBLE) {
                 interruptibility = Interruptibility.UNINTERRUPTIBLE;
                 return;
@@ -107,16 +112,15 @@ public class Deadline implements ICommand {
      * @param interrupted whether the command was interrupted or ended normally
      */
     public void end(boolean interrupted) {
-        for (ICommand command : commands) {
-            command.end(interrupted);
+        for (ICommand command : commands.keySet()) {
+            if (!commands.get(command)) {
+                command.end(interrupted);
+            }
         }
 
         if (!done) {
             deadlineCommand.end(interrupted);
         }
-
-        commands.clear();
-        done = true;
     }
 
     /**
@@ -125,7 +129,7 @@ public class Deadline implements ICommand {
     public ICommand copy() {
         ICommand[] cmds = new ICommand[commands.size()];
         int i = 0;
-        for (ICommand command : commands) {
+        for (ICommand command : commands.keySet()) {
             cmds[i++] = command.copy();
         }
 
@@ -140,8 +144,11 @@ public class Deadline implements ICommand {
      * Not to be called by the user directly, use a scheduler instead.
      */
     public void start() {
+        done = false;
+        numCompleted = 0;
         deadlineCommand.start();
-        for (ICommand command : commands) {
+        for (ICommand command : commands.keySet()) {
+            commands.put(command, false);
             command.start();
         }
     }
@@ -162,7 +169,7 @@ public class Deadline implements ICommand {
         List<Object> deadlineRequirements = deadlineCommand.getRequirements();
         if (deadlineRequirements != null)
             set.addAll(deadlineRequirements);
-        for (ICommand command : commands) {
+        for (ICommand command : commands.keySet()) {
             List<Object> r = command.getRequirements();
             if (r != null)
                 set.addAll(r);

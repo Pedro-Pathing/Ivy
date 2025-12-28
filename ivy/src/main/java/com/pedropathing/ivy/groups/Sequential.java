@@ -14,7 +14,8 @@ import java.util.*;
  * @author Kabir Goyal
  */
 public class Sequential implements ICommand {
-    protected ArrayDeque<ICommand> commands = new ArrayDeque<>();
+    protected ICommand[] commands = new ICommand[0];
+    protected int idx = 0;
     protected List<Object> requirements = new ArrayList<>();
     private Interruptibility interruptibility = Interruptibility.INTERRUPTIBLE;
     private Chainability chainability = Chainability.UNCHAINABLE;
@@ -25,7 +26,7 @@ public class Sequential implements ICommand {
      * @param cmds the commands to run in sequence, in order
      */
     public Sequential(ICommand... cmds) {
-        commands.addAll(Arrays.asList(cmds));
+        commands = cmds;
         rebuildRequirements();
         generateInterruptibility();
     }
@@ -45,14 +46,18 @@ public class Sequential implements ICommand {
         if (done())
             return;
 
-        ICommand current = commands.peek();
-        assert current != null;
+        ICommand current = commands[idx];
+        if (current == null) {
+            idx++;
+            execute();
+            return;
+        }
 
         if (current.done()) {
             current.end(false);
-            commands.poll();
+            idx++;
             if (!done()) {
-                ICommand next = commands.peek();
+                ICommand next = commands[idx];
                 if (next != null)
                     next.start();
             }
@@ -97,12 +102,10 @@ public class Sequential implements ICommand {
      *                    normally
      */
     public void end(boolean interrupted) {
-        while (!commands.isEmpty()) {
-            ICommand c = commands.poll();
-            if (c != null) {
-                c.end(interrupted);
-            }
+        for (int i = idx; i < commands.length; i++) {
+            commands[i].end(interrupted);
         }
+        idx = commands.length;
     }
 
     /**
@@ -110,7 +113,7 @@ public class Sequential implements ICommand {
      *         subcommands
      */
     public ICommand copy() {
-        ICommand[] cmds = new ICommand[commands.size()];
+        ICommand[] cmds = new ICommand[commands.length];
         int i = 0;
         for (ICommand command : commands) {
             cmds[i++] = command.copy();
@@ -123,8 +126,9 @@ public class Sequential implements ICommand {
      * Not to be called by the user directly, use a scheduler instead.
      */
     public void start() {
+        idx = 0;
         if (!done()) {
-            ICommand current = commands.peek();
+            ICommand current = commands[idx];
             if (current != null)
                 current.start();
         }
@@ -135,7 +139,7 @@ public class Sequential implements ICommand {
      *         Not to be called by the user directly, use a scheduler instead.
      */
     public boolean done() {
-        return commands.isEmpty();
+        return idx >= commands.length;
     }
 
     /**
