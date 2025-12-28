@@ -45,6 +45,11 @@ public class BooleanLoop extends Command {
         Scheduler.getInstance().schedule(repeatedCommandReference.get().copy());
     }
 
+    /**
+     * Always returns true, as this command is done immediately after starting.
+     *
+     * @return true
+     */
     @Override
     public boolean done() {
         return true;
