@@ -21,7 +21,6 @@ public class Deadline implements ICommand {
     private ICommand deadlineCommand;
     private List<Object> requirements = new ArrayList<>();
     private boolean done;
-    private int numCompleted = 0;
     Interruptibility interruptibility = Interruptibility.INTERRUPTIBLE;
     private Chainability chainability = Chainability.UNCHAINABLE;
 
@@ -64,7 +63,6 @@ public class Deadline implements ICommand {
                 if (!commands.get(command)) {
                     if (command.done()) {
                         command.end(false);
-                        numCompleted++;
                         commands.put(command, true);
                     } else {
                         command.execute();
@@ -145,7 +143,6 @@ public class Deadline implements ICommand {
      */
     public void start() {
         done = false;
-        numCompleted = 0;
         deadlineCommand.start();
         for (ICommand command : commands.keySet()) {
             commands.put(command, false);
