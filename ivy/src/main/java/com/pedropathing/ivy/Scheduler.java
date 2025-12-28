@@ -18,8 +18,8 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class Scheduler {
     private static final Scheduler instance = new Scheduler();
-    private LinkedList<ICommand> commands = new LinkedList<>();
-    private HashMap<Object, ICommand> commandMap = new HashMap<>();
+    private final LinkedList<ICommand> commands = new LinkedList<>();
+    private final HashMap<Object, ICommand> commandMap = new HashMap<>();
 
     /**
      * Gets the singleton instance of the Scheduler
