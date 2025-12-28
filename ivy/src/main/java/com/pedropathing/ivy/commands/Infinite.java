@@ -1,7 +1,5 @@
 package com.pedropathing.ivy.commands;
 
-import com.pedropathing.ivy.Command;
-
 /**
  * A command that runs indefinitely until interrupted.
  * 
@@ -9,7 +7,7 @@ import com.pedropathing.ivy.Command;
  * @author Baron Henderson
  * @author Kabir Goyal
  */
-public class Infinite extends Command {
+public class Infinite extends CommandClass {
     /**
      * Constructs a new Infinite command that runs the given runnable
      * indefinitely until interrupted.

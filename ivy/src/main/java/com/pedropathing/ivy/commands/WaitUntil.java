@@ -1,7 +1,5 @@
 package com.pedropathing.ivy.commands;
 
-import com.pedropathing.ivy.Command;
-
 import java.util.function.BooleanSupplier;
 
 /**
@@ -10,7 +8,7 @@ import java.util.function.BooleanSupplier;
  * @version 1.0
  * @author Kabir Goyal
  */
-public class WaitUntil extends Command {
+public class WaitUntil extends CommandClass {
     /**
      * Constructs a new WaitUntil command that waits until the given condition
      * is true before finishing.

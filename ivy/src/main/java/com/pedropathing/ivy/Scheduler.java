@@ -1,169 +1,152 @@
 package com.pedropathing.ivy;
 
-import com.pedropathing.ivy.commands.Instant;
-import com.pedropathing.ivy.commands.WaitUntil;
-import com.pedropathing.ivy.groups.Sequential;
+import com.pedropathing.ivy.behaviors.BlockedBehavior;
+import com.pedropathing.ivy.behaviors.EndCondition;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 /**
  * The Scheduler is responsible for managing and executing commands.
- * It ensures that commands are scheduled according to their requirements,
- * interruptibility, and chainability.
- * 
- * @version 1.0
+ * It ensures that commands are scheduled and run according to their requirements,
+ * priority, conflict behavior, and interrupted behavior.
+ *
  * @author Baron Henderson
  * @author Kabir Goyal
+ * @author Davis Luxenberg
  */
-public class Scheduler {
-    private static final Scheduler instance = new Scheduler();
-    private final LinkedList<ICommand> commands = new LinkedList<>();
-    private final HashMap<Object, ICommand> commandMap = new HashMap<>();
-
-    /**
-     * Gets the singleton instance of the Scheduler
-     * 
-     * @return
-     */
-    public static Scheduler getInstance() {
-        return instance;
+public final class Scheduler {
+    private Scheduler() {
     }
 
-    /**
-     * Removes a command from the scheduler
-     * 
-     * @param cmd command to be removed
-     */
-    private void remove(ICommand cmd) {
-        commands.remove(cmd);
-        removeRequirements(cmd);
-    }
+    private static final List<Command> runningCommands = new LinkedList<>();
+    private static final Map<Object, Command> activeRequirements = new HashMap<>();
+    private static final List<Command> queuedCommands = new LinkedList<>();
+    private static final List<Command> suspendedCommands = new LinkedList<>();
 
     /**
-     * Removes the requirements of a command from the command map
-     * 
-     * @param cmd command whose requirements are to be removed
+     * Attempts to schedule a command for execution
+     *
+     * @param command command to be scheduled
      */
-    private void removeRequirements(ICommand cmd) {
-        for (Object req : cmd.getRequirements()) {
-            commandMap.remove(req);
+    @SuppressWarnings("DataFlowIssue")
+    public static void schedule(Command command) {
+        Set<Object> conflictingRequirements = command.requirements().stream()
+                .filter(activeRequirements::containsKey)
+                .collect(Collectors.toSet());
+
+        Set<Command> conflictingCommands = conflictingRequirements.stream()
+                .map(activeRequirements::get)
+                .collect(Collectors.toSet());
+
+        if (conflictingRequirements.isEmpty()) {
+            startCommand(command);
+            return;
+        }
+
+        boolean blocked = conflictingCommands.stream().anyMatch(
+                conflictingCommand -> conflictingCommand.priority() > command.priority()
+        );
+
+        if (blocked) {
+            if (command.blockedBehavior() == BlockedBehavior.QUEUE) {
+                queuedCommands.add(command);
+            }
+            return;
+        }
+
+        boolean conflicting = conflictingRequirements.stream().anyMatch(
+                requirement -> activeRequirements.get(requirement).priority() == command.priority()
+        );
+
+        if (conflicting) {
+            switch (command.conflictBehavior()) {
+                case OVERRIDE:
+                    conflictingCommands.forEach(Scheduler::interrupt);
+                    startCommand(command);
+                    break;
+                case QUEUE:
+                    queuedCommands.add(command);
+                    break;
+            }
+            return;
+        }
+
+        conflictingCommands.forEach(Scheduler::interrupt);
+        startCommand(command);
+    }
+
+    private static void interrupt(Command command) {
+        switch (command.interruptedBehavior()) {
+            case END:
+                command.end(EndCondition.INTERRUPTED);
+                removeRequirements(command);
+                runningCommands.remove(command);
+                break;
+            case SUSPEND:
+                command.end(EndCondition.SUSPENDED);
+                removeRequirements(command);
+                runningCommands.remove(command);
+                suspendedCommands.add(command);
+                break;
         }
     }
 
-    /**
-     * Schedules one or more commands for execution <b>in parallel</b>
-     * 
-     * @param cmds commands to be scheduled
-     */
-    public void schedule(ICommand... cmds) {
-        for (ICommand cmd : cmds) {
-            List<Object> requirements = cmd.getRequirements();
-            List<Object> conflictObjects = new ArrayList<>();
-            for (Object req : requirements) {
-                if (commandMap.containsKey(req)) {
-                    conflictObjects.add(req);
-                }
-            }
-            if (!conflictObjects.isEmpty()) {
-                Interruptibility interruptibility = Interruptibility.INTERRUPTIBLE;
-                Set<ICommand> conflictingInterruptibleCommands = new HashSet<>();
-                for (Object conflictObject : conflictObjects) {
-                    ICommand conflictingCommand = commandMap.get(conflictObject);
-                    if (conflictingCommand.getInterruptibility() == Interruptibility.UNINTERRUPTIBLE) {
-                        interruptibility = Interruptibility.UNINTERRUPTIBLE;
-                        break;
-                    } else if (conflictingCommand.getInterruptibility() == Interruptibility.INTERRUPTIBLE) {
-                        conflictingInterruptibleCommands.add(conflictingCommand);
-                    }
-                }
-                if (interruptibility == Interruptibility.INTERRUPTIBLE) {
-                    for (ICommand conflictingCommand : conflictingInterruptibleCommands) {
-                        conflictingCommand.end(true);
-                        remove(conflictingCommand);
-                    }
-                    commands.add(cmd);
-                    cmd.start();
-                    for (Object req : cmd.getRequirements()) {
-                        commandMap.put(req, cmd);
-                    }
-                } else if (cmd.getChainability() == Chainability.CHAINABLE) {
-                    AtomicReference<Sequential> wrapperRef = new AtomicReference<>();
+    private static void removeRequirements(Command command) {
+        command.requirements().forEach(activeRequirements::remove);
+    }
 
-                    Sequential wrapper = new Sequential(
-                            new WaitUntil(() -> {
-                                for (Object req : requirements) {
-                                    if (commandMap.containsKey(req)) {
-                                        ICommand conflictingCommand = commandMap.get(req);
-                                        if (conflictingCommand
-                                                .getInterruptibility() == Interruptibility.UNINTERRUPTIBLE) {
-                                            return false;
-                                        }
-                                    }
-                                }
-                                return true;
-                            }),
-                            new Instant(() -> {
-                                Set<ICommand> conflictingCommands = new HashSet<>();
-                                for (Object conflictObject : conflictObjects) {
-                                    ICommand conflictingCommand = commandMap.get(conflictObject);
-                                    if (conflictingCommand != null) {
-                                        conflictingCommands.add(conflictingCommand);
-                                    }
-                                }
-                                for (ICommand conflictingCommand : conflictingCommands) {
-                                    conflictingCommand.end(true);
-                                    remove(conflictingCommand);
-                                }
+    private static void addRequirements(Command command) {
+        command.requirements().forEach(requirement -> activeRequirements.put(requirement, command));
+    }
 
-                                for (Object req : cmd.getRequirements()) {
-                                    commandMap.put(req, wrapperRef.get());
-                                }
-                            }),
-                            cmd);
-
-                    wrapperRef.set(wrapper);
-                    commands.add(wrapper);
-
-                }
-            } else {
-                commands.add(cmd);
-                cmd.start();
-                for (Object req : cmd.getRequirements()) {
-                    commandMap.put(req, cmd);
-                }
-            }
-        }
+    private static void startCommand(Command command) {
+        runningCommands.add(command);
+        command.start();
+        addRequirements(command);
     }
 
     /**
-     * Executes all scheduled commands <b>in parallel</b>. This method should be
-     * called
-     * periodically
+     * Executes all running commands. This method should be called periodically.
      */
-    public void execute() {
-        if (!commands.isEmpty()) {
-            List<ICommand> copy = new ArrayList<>(commands);
-            Iterator<ICommand> it = copy.iterator();
-            while (it.hasNext()) {
-                ICommand command = it.next();
+    public static void execute() {
+        if (!runningCommands.isEmpty()) {
+            new ArrayList<>(runningCommands).forEach(command -> {
+                command.execute();
                 if (command.done()) {
-                    command.end(false);
+                    command.end(EndCondition.NATURALLY);
                     removeRequirements(command);
-                    it.remove();
-                } else {
-                    command.execute();
+                    runningCommands.remove(command);
                 }
-            }
+            });
         }
+
+        queuedCommands.forEach(command -> {
+            boolean canBeScheduled = command.requirements().stream().noneMatch(activeRequirements::containsKey);
+            if (canBeScheduled) {
+                queuedCommands.remove(command);
+                startCommand(command);
+            }
+        });
+
+        suspendedCommands.forEach(command -> {
+            boolean canBeScheduled = command.requirements().stream().noneMatch(activeRequirements::containsKey);
+            if (canBeScheduled) {
+                suspendedCommands.remove(command);
+                runningCommands.add(command);
+                addRequirements(command);
+            }
+        });
     }
+
 
     /**
-     * Resets the scheduler by clearing all scheduled commands
+     * Resets the scheduler by clearing all running commands
      */
-    public void reset() {
-        commands.clear();
-        commandMap.clear();
+    public static void reset() {
+        runningCommands.clear();
+        activeRequirements.clear();
+        queuedCommands.clear();
+        suspendedCommands.clear();
     }
-
 }

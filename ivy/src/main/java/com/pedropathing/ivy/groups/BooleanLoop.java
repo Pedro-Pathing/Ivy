@@ -1,7 +1,6 @@
 package com.pedropathing.ivy.groups;
 
 import com.pedropathing.ivy.Command;
-import com.pedropathing.ivy.ICommand;
 import com.pedropathing.ivy.Scheduler;
 
 import java.util.concurrent.atomic.AtomicReference;
@@ -14,8 +13,8 @@ import java.util.function.BooleanSupplier;
  * @version 1.0
  * @author Kabir Goyal
  */
-public class BooleanLoop extends Command {
-    private final AtomicReference<Command> repeatedCommandReference = new AtomicReference<>(new Command());
+public class BooleanLoop extends CommandClass {
+    private final AtomicReference<CommandClass> repeatedCommandReference = new AtomicReference<>(new CommandClass());
     private final BooleanSupplier endCondition;
 
     /**
@@ -24,8 +23,8 @@ public class BooleanLoop extends Command {
      * @param endCondition the condition to check before each iteration
      * @param c            the command to run repeatedly
      */
-    public BooleanLoop(BooleanSupplier endCondition, ICommand c) {
-        Command repeatedCommand = new Command();
+    public BooleanLoop(BooleanSupplier endCondition, Command c) {
+        CommandClass repeatedCommand = new CommandClass();
         this.endCondition = endCondition;
         repeatedCommand.adoptBehavior(c, true);
         repeatedCommand.setEnd(

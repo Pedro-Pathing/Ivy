@@ -1,7 +1,6 @@
 package com.pedropathing.ivy.commands;
 
 import com.pedropathing.ivy.Command;
-import com.pedropathing.ivy.ICommand;
 
 import java.util.function.Supplier;
 
@@ -12,8 +11,8 @@ import java.util.function.Supplier;
  * @author Havish Sripada
  * @author Kabir Goyal
  */
-public class Lazy extends Command {
-    private final Supplier<ICommand> commandSupplier;
+public class Lazy extends CommandClass {
+    private final Supplier<Command> commandSupplier;
 
     /**
      * Constructs a new Lazy command that uses the given supplier to create its
@@ -22,7 +21,7 @@ public class Lazy extends Command {
      * @param commandSupplier the supplier that provides the command to run when
      *                        started
      */
-    public Lazy(Supplier<ICommand> commandSupplier) {
+    public Lazy(Supplier<Command> commandSupplier) {
         this.commandSupplier = commandSupplier;
     }
 

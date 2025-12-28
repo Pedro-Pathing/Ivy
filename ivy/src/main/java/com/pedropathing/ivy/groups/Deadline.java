@@ -1,10 +1,13 @@
 package com.pedropathing.ivy.groups;
 
-import com.pedropathing.ivy.ICommand;
-import com.pedropathing.ivy.Interruptibility;
-import com.pedropathing.ivy.Chainability;
+import com.pedropathing.ivy.Command;
+import com.pedropathing.ivy.CommandBuilder;
+import com.pedropathing.ivy.behaviors.EndCondition;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * A command group that runs multiple commands in parallel, with one command
@@ -13,183 +16,82 @@ import java.util.*;
  * which point all other
  * commands are interrupted.
  *
- * @version 1.0
+ * @author Baron Henderson
  * @author Kabir Goyal
+ * @version 1.0
  */
-public class Deadline implements ICommand {
-    private HashMap<ICommand, Boolean> commands = new HashMap<>();
-    private ICommand deadlineCommand;
-    private List<Object> requirements = new ArrayList<>();
-    private boolean done;
-    Interruptibility interruptibility = Interruptibility.INTERRUPTIBLE;
-    private Chainability chainability = Chainability.UNCHAINABLE;
+public class Deadline extends CommandBuilder {
+    private final Map<Command, Boolean> commands = new HashMap<>();
+    private final Command deadline;
+    private boolean deadlineCompleted = false;
 
     /**
      * Constructs a new Deadline command group with the passed in commands, where
      * the first command is the deadline command.
      *
-     * @param cmds the commands to run in parallel, with the first command as the
-     *             deadline
+     * @param deadline  the command to use as the deadline
+     * @param children the other commands to run in parallel
      */
-    public Deadline(ICommand... cmds) {
-        if (cmds.length < 1) throw new IllegalArgumentException("Cannot make empty deadline group");
-        deadlineCommand = cmds[0];
-        for (int i = 1; i < cmds.length; i++) {
-            commands.put(cmds[i], false);
-        }
-        rebuildRequirements();
-        generateInterruptibility();
-    }
+    public Deadline(Command deadline, Command... children) {
+        this.deadline = deadline;
+        Arrays.stream(children).forEach(command -> commands.put(command, false));
 
-    /**
-     * Runs all commands in parallel until the deadline command completes, then
-     * ends the others.
-     * Not to be called by the user directly, use a scheduler instead.
-     */
-    public void execute() {
-        if (!done()) {
-            if (deadlineCommand.done()) {
-                done = true;
-                deadlineCommand.end(false);
-                for (ICommand command : commands.keySet()) {
-                    if (!commands.get(command)) {
-                        command.end(true);
-                    }
-                }
+        requiring(
+                Arrays.stream(children)
+                        .flatMap(command -> command.requirements().stream())
+                        .collect(Collectors.toSet())
+        );
+        requirements().addAll(deadline.requirements());
+
+        setPriority(Math.max(
+                deadline.priority(),
+                Arrays.stream(children).mapToInt(Command::priority).max().orElse(0)
+        ));
+
+        setExecute(() -> {
+            if (done()) return;
+
+            if (deadline.done()) {
+                deadlineCompleted = true;
+                deadline.end(EndCondition.NATURALLY);
+                commands.entrySet().stream()
+                        .filter(entry -> !entry.getValue())
+                        .forEach(entry -> entry.getKey().end(EndCondition.INTERRUPTED));
                 return;
             }
-            deadlineCommand.execute();
+            deadline.execute();
 
-            for (ICommand command : commands.keySet()) {
-                if (!commands.get(command)) {
-                    if (command.done()) {
-                        command.end(false);
-                        commands.put(command, true);
-                    } else {
-                        command.execute();
-                    }
+            commands.keySet().forEach(command -> {
+                if (commands.get(command)) return;
+
+                if (command.done()) {
+                    command.end(EndCondition.NATURALLY);
+                    commands.put(command, true);
+                    return;
                 }
+
+                command.execute();
+            });
+        });
+
+        setEnd(endCondition -> {
+            if (!deadlineCompleted) {
+                deadline.end(endCondition);
             }
-        }
-    }
+            commands.entrySet().stream()
+                    .filter(entry -> !entry.getValue())
+                    .forEach(entry -> entry.getKey().end(endCondition));
+        });
 
-    /**
-     * @return the list of requirements for this command group
-     */
-    public List<Object> getRequirements() {
-        return requirements;
-    }
+        setStart(() -> {
+            deadlineCompleted = false;
+            deadline.start();
+            commands.keySet().forEach(command -> {
+                commands.put(command, false);
+                command.start();
+            });
+        });
 
-    /**
-     * @return the interruptibility of this command group
-     */
-    public Interruptibility getInterruptibility() {
-        return interruptibility;
-    }
-
-    /**
-     * Sets the interruptibility of this command group based on its subcommands
-     */
-    protected void generateInterruptibility() {
-        if (deadlineCommand.getInterruptibility() == Interruptibility.UNINTERRUPTIBLE) {
-            interruptibility = Interruptibility.UNINTERRUPTIBLE;
-            return;
-        }
-
-        for (ICommand command : commands.keySet()) {
-            if (command.getInterruptibility() == Interruptibility.UNINTERRUPTIBLE) {
-                interruptibility = Interruptibility.UNINTERRUPTIBLE;
-                return;
-            }
-        }
-    }
-
-    /**
-     * Ends all commands in this command group
-     * Not to be called by the user directly, use a scheduler instead.
-     *
-     * @param interrupted whether the command was interrupted or ended normally
-     */
-    public void end(boolean interrupted) {
-        for (ICommand command : commands.keySet()) {
-            if (!commands.get(command)) {
-                command.end(interrupted);
-            }
-        }
-
-        if (!done) {
-            deadlineCommand.end(interrupted);
-        }
-    }
-
-    /**
-     * @return a copy of this command group
-     */
-    public ICommand copy() {
-        ICommand[] cmds = new ICommand[commands.size()];
-        int i = 0;
-        for (ICommand command : commands.keySet()) {
-            cmds[i++] = command.copy();
-        }
-
-        ICommand[] all = new ICommand[cmds.length + 1];
-        all[0] = deadlineCommand.copy();
-        System.arraycopy(cmds, 0, all, 1, cmds.length);
-        return new Deadline(all).setChainability(chainability);
-    }
-
-    /**
-     * Starts all commands in this command group
-     * Not to be called by the user directly, use a scheduler instead.
-     */
-    public void start() {
-        done = false;
-        deadlineCommand.start();
-        for (ICommand command : commands.keySet()) {
-            commands.put(command, false);
-            command.start();
-        }
-    }
-
-    /**
-     * @return whether the deadline command has completed
-     *         Not to be called by the user directly, use a scheduler instead.
-     */
-    public boolean done() {
-        return done;
-    }
-
-    /**
-     * Rebuilds the requirements list for this command group
-     */
-    protected void rebuildRequirements() {
-        Set<Object> set = new HashSet<>();
-        List<Object> deadlineRequirements = deadlineCommand.getRequirements();
-        if (deadlineRequirements != null)
-            set.addAll(deadlineRequirements);
-        for (ICommand command : commands.keySet()) {
-            List<Object> r = command.getRequirements();
-            if (r != null)
-                set.addAll(r);
-        }
-        requirements = new ArrayList<>(set);
-    }
-
-    /**
-     * Sets the chainability of this command group
-     *
-     * @param chainability the chainability to set
-     * @return this command group
-     */
-    public Deadline setChainability(Chainability chainability) {
-        this.chainability = chainability;
-        return this;
-    }
-
-    /**
-     * @return the chainability of this command group
-     */
-    public Chainability getChainability() {
-        return chainability;
+        setDone(() -> deadlineCompleted);
     }
 }

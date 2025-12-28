@@ -1,176 +1,83 @@
 package com.pedropathing.ivy.groups;
 
-import com.pedropathing.ivy.ICommand;
-import com.pedropathing.ivy.Interruptibility;
-import com.pedropathing.ivy.Chainability;
+import com.pedropathing.ivy.Command;
+import com.pedropathing.ivy.CommandBuilder;
+import com.pedropathing.ivy.behaviors.EndCondition;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * A command group that runs commands in sequence, one after the other.
- * 
- * @version 1.0
+ *
  * @author Baron Henderson
  * @author Kabir Goyal
+ * @version 1.0
  */
-public class Sequential implements ICommand {
-    protected ICommand[] commands = new ICommand[0];
-    protected int idx = 0;
-    protected List<Object> requirements = new ArrayList<>();
-    private Interruptibility interruptibility = Interruptibility.INTERRUPTIBLE;
-    private Chainability chainability = Chainability.UNCHAINABLE;
+public class Sequential extends CommandBuilder {
+    private final List<Command> commands;
+    private int index = 0;
 
     /**
      * Constructs a new Sequential command group with the passed in commands
-     * 
-     * @param cmds the commands to run in sequence, in order
+     *
+     * @param children the commands to run in sequence, in order
      */
-    public Sequential(ICommand... cmds) {
-        commands = cmds;
-        rebuildRequirements();
-        generateInterruptibility();
-    }
+    public Sequential(Command... children) {
+        commands = Arrays.asList(children);
 
-    /**
-     * Constructs an empty Sequential command group
-     */
-    public Sequential() {
-    }
+        requiring(
+                commands.stream()
+                        .flatMap(command -> command.requirements().stream())
+                        .collect(Collectors.toSet())
+        );
 
-    /**
-     * Runs the current command in the sequence. If the current command completes,
-     * it ends it and starts the next command.
-     * Not to be called by the user directly, use a scheduler instead.
-     */
-    public void execute() {
-        if (done())
-            return;
+        setPriority(commands.stream().mapToInt(Command::priority).max().getAsInt());
 
-        ICommand current = commands[idx];
-        if (current == null) {
-            idx++;
-            execute();
-            return;
-        }
+        setExecute(() -> {
+            if (done()) return;
 
-        if (current.done()) {
-            current.end(false);
-            idx++;
-            if (!done()) {
-                ICommand next = commands[idx];
-                if (next != null)
-                    next.start();
-            }
-        } else {
-            current.execute();
-        }
-    }
+            Command current = commands.get(index);
 
-    /**
-     * @return the list of requirements for this command group, the union of the
-     *         requirements of its subcommands
-     */
-    public List<Object> getRequirements() {
-        return requirements;
-    }
-
-    /**
-     * @return the interruptibility of this command group, UNINTERRUPTIBLE if any
-     *         subcommand is UNINTERRUPTIBLE, otherwise INTERRUPTIBLE
-     */
-    public Interruptibility getInterruptibility() {
-        return interruptibility;
-    }
-
-    /**
-     * sets the interruptibility of this command group based on its subcommands
-     */
-    protected void generateInterruptibility() {
-        for (ICommand command : commands) {
-            if (command.getInterruptibility() == Interruptibility.UNINTERRUPTIBLE) {
-                interruptibility = Interruptibility.UNINTERRUPTIBLE;
+            if (current == null) {
+                index++;
+                execute();
                 return;
             }
-        }
-    }
 
-    /**
-     * Ends all commands in the sequence, in order
-     * Not to be called by the user directly, use a scheduler instead.
-     * 
-     * @param interrupted whether the command group was interrupted or ended
-     *                    normally
-     */
-    public void end(boolean interrupted) {
-        for (int i = idx; i < commands.length; i++) {
-            commands[i].end(interrupted);
-        }
-        idx = commands.length;
-    }
+            if (current.done()) {
+                current.end(EndCondition.NATURALLY);
+                index++;
+                if (!done()) {
+                    Command next = commands.get(index);
+                    if (next != null) next.start();
+                }
+                return;
+            }
 
-    /**
-     * @return a copy of this Sequential command group with copies of all its
-     *         subcommands
-     */
-    public ICommand copy() {
-        ICommand[] cmds = new ICommand[commands.length];
-        int i = 0;
-        for (ICommand command : commands) {
-            cmds[i++] = command.copy();
-        }
-        return new Sequential(cmds).setChainability(chainability);
-    }
+            current.execute();
+        });
 
-    /**
-     * Starts the first command in the sequence
-     * Not to be called by the user directly, use a scheduler instead.
-     */
-    public void start() {
-        idx = 0;
-        if (!done()) {
-            ICommand current = commands[idx];
-            if (current != null)
-                current.start();
-        }
-    }
+        setEnd(endCondition -> {
+            if (endCondition == EndCondition.SUSPENDED) {
+                commands.get(index).end(endCondition);
+            } else {
+                for (int i = index; i < commands.size(); i++) {
+                    commands.get(i).end(endCondition);
+                }
+                index = commands.size();
+            }
+        });
 
-    /**
-     * @return whether all commands in the sequence have completed
-     *         Not to be called by the user directly, use a scheduler instead.
-     */
-    public boolean done() {
-        return idx >= commands.length;
-    }
+        setStart(() -> {
+            index = 0;
+            if (!done()) {
+                Command current = commands.get(index);
+                if (current != null) current.start();
+            }
+        });
 
-    /**
-     * Creates the requirements for this command group, the union of the
-     * requirements of its subcommands
-     */
-    protected void rebuildRequirements() {
-        Set<Object> set = new HashSet<>();
-        for (ICommand command : commands) {
-            List<Object> r = command.getRequirements();
-            if (r != null)
-                set.addAll(r);
-        }
-        requirements = new ArrayList<>(set);
-    }
-
-    /**
-     * @return the chainability of this command group
-     */
-    public Chainability getChainability() {
-        return chainability;
-    }
-
-    /**
-     * Sets the chainability of this command group
-     * 
-     * @param chainability the chainability to set
-     * @return this, so setters can be chained
-     */
-    public Sequential setChainability(Chainability chainability) {
-        this.chainability = chainability;
-        return this;
+        setDone(() -> index >= commands.size());
     }
 }

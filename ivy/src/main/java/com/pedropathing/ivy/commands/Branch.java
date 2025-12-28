@@ -1,7 +1,6 @@
 package com.pedropathing.ivy.commands;
 
 import com.pedropathing.ivy.Command;
-import com.pedropathing.ivy.ICommand;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -17,8 +16,8 @@ import java.util.function.BooleanSupplier;
  * @author Havish Sripada
  * @author Kabir Goyal
  */
-public class Branch extends Command {
-    private final LinkedHashMap<BooleanSupplier, ICommand> commands;
+public class Branch extends CommandClass {
+    private final LinkedHashMap<BooleanSupplier, Command> commands;
 
     /**
      * Constructs a new Optional command that runs one of multiple commands based
@@ -29,7 +28,7 @@ public class Branch extends Command {
      *                 The order of insertion determines the priority of the
      *                 commands.
      */
-    public Branch(LinkedHashMap<BooleanSupplier, ICommand> commands) {
+    public Branch(LinkedHashMap<BooleanSupplier, Command> commands) {
         this.commands = commands;
     }
 
@@ -41,7 +40,7 @@ public class Branch extends Command {
      */
     @Override
     public void start() {
-        for (Map.Entry<BooleanSupplier, ICommand> entry : commands.entrySet()) {
+        for (Map.Entry<BooleanSupplier, Command> entry : commands.entrySet()) {
             if (entry.getKey().getAsBoolean()) {
                 adoptBehavior(entry.getValue());
                 return;
@@ -57,8 +56,8 @@ public class Branch extends Command {
      */
     @Override
     public Branch copy() {
-        LinkedHashMap<BooleanSupplier, ICommand> copiedCommands = new LinkedHashMap<>();
-        for (Map.Entry<BooleanSupplier, ICommand> entry : commands.entrySet()) {
+        LinkedHashMap<BooleanSupplier, Command> copiedCommands = new LinkedHashMap<>();
+        for (Map.Entry<BooleanSupplier, Command> entry : commands.entrySet()) {
             copiedCommands.put(entry.getKey(), entry.getValue().copy());
         }
         return new Branch(copiedCommands);

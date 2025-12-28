@@ -3,7 +3,6 @@ package com.pedropathing.ivy.commands.follow;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierPoint;
 import com.pedropathing.geometry.Pose;
-import com.pedropathing.ivy.Command;
 import com.pedropathing.paths.HeadingInterpolator;
 import com.pedropathing.paths.Path;
 import com.pedropathing.paths.PathConstraints;
@@ -15,7 +14,7 @@ import com.pedropathing.paths.PathConstraints;
  * @author Baron Henderson
  * @author Havish Sripada
  */
-public class Turn extends Command {
+public class Turn extends CommandClass {
 
     /**
      * Constructs a new Turn command that makes the given Follower turn to the
