@@ -49,6 +49,7 @@ deployer {
         developer("Baron Henderson", "baron@pedropathing.com")
         developer("Havish Sripada", "havish@pedropathing.com")
         developer("Davis Luxenberg", "davis@pedropathing.com")
+        developer("Kabir Goyal", "kabirgoyal@icloud.com")
     }
 
     signing {
