@@ -15,7 +15,8 @@ import java.util.function.BooleanSupplier;
  * @author Kabir Goyal
  */
 public class BooleanLoop extends Command {
-    AtomicReference<Command> repeatedCommandReference = new AtomicReference<>(new Command());
+    private final AtomicReference<Command> repeatedCommandReference = new AtomicReference<>(new Command());
+    private final BooleanSupplier endCondition;
 
     /**
      * Command that schedules itself when it ends until a given condition is false.
@@ -25,6 +26,7 @@ public class BooleanLoop extends Command {
      */
     public BooleanLoop(BooleanSupplier endCondition, ICommand c) {
         Command repeatedCommand = new Command();
+        this.endCondition = endCondition;
         repeatedCommand.adoptBehaviorWithoutStarting(c);
         repeatedCommand.setEnd(
                 (interrupted) -> {
