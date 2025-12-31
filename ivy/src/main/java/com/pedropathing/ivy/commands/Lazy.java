@@ -1,6 +1,8 @@
 package com.pedropathing.ivy.commands;
 
 import com.pedropathing.ivy.Command;
+import com.pedropathing.ivy.CommandBuilder;
+import com.pedropathing.ivy.behaviors.EndCondition;
 
 import java.util.function.Supplier;
 
@@ -11,8 +13,9 @@ import java.util.function.Supplier;
  * @author Havish Sripada
  * @author Kabir Goyal
  */
-public class Lazy extends CommandClass {
+public class Lazy extends CommandBuilder {
     private final Supplier<Command> commandSupplier;
+    private Command command;
 
     /**
      * Constructs a new Lazy command that uses the given supplier to create its
@@ -23,25 +26,27 @@ public class Lazy extends CommandClass {
      */
     public Lazy(Supplier<Command> commandSupplier) {
         this.commandSupplier = commandSupplier;
-    }
 
-    /**
-     * Starts the command by adopting the behavior provided by the command
-     * supplier.
-     * Not to be called directly, use a scheduler instead.
-     */
-    @Override
-    public void start() {
-        adoptBehavior(commandSupplier.get());
-    }
+        setStart(() -> {
+            command = commandSupplier.get();
+            if (command != null) {
+                command.start();
+            }
+        });
 
-    /**
-     * Creates a copy of this Lazy command.
-     *
-     * @return a new Lazy command with the same command supplier
-     */
-    @Override
-    public Lazy copy() {
-        return new Lazy(commandSupplier);
+        setExecute(() -> {
+            if (done()) return;
+            if (command != null) {
+                command.execute();
+            }
+        });
+
+        setDone(() -> command == null || command.done());
+
+        setEnd(endCondition -> {
+            if (command != null) {
+                command.end(endCondition);
+            }
+        });
     }
 }
