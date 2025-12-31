@@ -12,6 +12,14 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+/**
+ * A builder class for creating commands with customizable behavior.
+ *
+ * @author Baron Henderson
+ * @author Kabir Goyal
+ * @author Davis Luxenberg
+ * @version 1.0
+ */
 public class CommandBuilder implements Command {
 
     private Set<Object> requirements;
@@ -113,51 +121,111 @@ public class CommandBuilder implements Command {
     };
 
 
+    /**
+     * Sets the runnable to execute when the command starts.
+     *
+     * @param start the runnable to execute on start
+     * @return this builder for chaining
+     */
     public CommandBuilder setStart(Runnable start) {
         this.start = start;
         return this;
     }
 
+    /**
+     * Sets the runnable to execute repeatedly while the command is running.
+     *
+     * @param execute the runnable to execute each cycle
+     * @return this builder for chaining
+     */
     public CommandBuilder setExecute(Runnable execute) {
         this.execute = execute;
         return this;
     }
 
+    /**
+     * Sets the condition that determines when the command is done.
+     *
+     * @param done the supplier that returns true when the command is complete
+     * @return this builder for chaining
+     */
     public CommandBuilder setDone(BooleanSupplier done) {
         this.done = done;
         return this;
     }
 
+    /**
+     * Sets the consumer to execute when the command ends.
+     *
+     * @param end the consumer that receives the end condition
+     * @return this builder for chaining
+     */
     public CommandBuilder setEnd(Consumer<EndCondition> end) {
         this.end = end;
         return this;
     }
 
+    /**
+     * Sets the requirements for this command.
+     *
+     * @param requirements the set of required resources
+     * @return this builder for chaining
+     */
     public CommandBuilder requiring(Set<Object> requirements) {
         this.requirements = requirements;
         return this;
     }
 
+    /**
+     * Sets the requirements for this command.
+     *
+     * @param requirements the required resources
+     * @return this builder for chaining
+     */
     public CommandBuilder requiring(Object... requirements) {
         this.requirements = Arrays.stream(requirements).collect(Collectors.toSet());
         return this;
     }
 
+    /**
+     * Sets the priority of this command for conflict resolution.
+     *
+     * @param priority the priority level (higher values = higher priority)
+     * @return this builder for chaining
+     */
     public CommandBuilder setPriority(int priority) {
         this.priority = priority;
         return this;
     }
 
+    /**
+     * Sets the behavior when this command is interrupted.
+     *
+     * @param interruptedBehavior the behavior to use when interrupted
+     * @return this builder for chaining
+     */
     public CommandBuilder setInterruptedBehavior(InterruptedBehavior interruptedBehavior) {
         this.interruptedBehavior = interruptedBehavior;
         return this;
     }
 
+    /**
+     * Sets the behavior when this command is blocked by a higher priority command.
+     *
+     * @param blockedBehavior the behavior to use when blocked
+     * @return this builder for chaining
+     */
     public CommandBuilder setBlockedBehavior(BlockedBehavior blockedBehavior) {
         this.blockedBehavior = blockedBehavior;
         return this;
     }
 
+    /**
+     * Sets the behavior when this command conflicts with an equal priority command.
+     *
+     * @param conflictBehavior the behavior to use on conflict
+     * @return this builder for chaining
+     */
     public CommandBuilder setConflictBehavior(ConflictBehavior conflictBehavior) {
         this.conflictBehavior = conflictBehavior;
         return this;
