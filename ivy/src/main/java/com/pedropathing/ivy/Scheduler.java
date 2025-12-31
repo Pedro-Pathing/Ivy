@@ -68,6 +68,9 @@ public final class Scheduler {
                 case QUEUE:
                     queuedCommands.add(command);
                     break;
+                case CANCEL:
+                    // Command is canceled - do not schedule
+                    break;
             }
             return;
         }
@@ -132,7 +135,7 @@ public final class Scheduler {
             });
         }
 
-        queuedCommands.forEach(command -> {
+        new ArrayList<>(queuedCommands).forEach(command -> {
             boolean canBeScheduled = command.requirements().stream().noneMatch(activeRequirements::containsKey);
             if (canBeScheduled) {
                 queuedCommands.remove(command);
@@ -140,7 +143,7 @@ public final class Scheduler {
             }
         });
 
-        suspendedCommands.forEach(command -> {
+        new ArrayList<>(suspendedCommands).forEach(command -> {
             boolean canBeScheduled = command.requirements().stream().noneMatch(activeRequirements::containsKey);
             if (canBeScheduled) {
                 suspendedCommands.remove(command);
