@@ -1,8 +1,12 @@
 package com.pedropathing.ivy.groups;
 
 import com.pedropathing.ivy.Command;
+import com.pedropathing.ivy.CommandBuilder;
+import com.pedropathing.ivy.behaviors.EndCondition;
 
+import java.util.List;
 import java.util.function.IntSupplier;
+import java.util.stream.Collectors;
 
 /**
  * A command group that runs a command multiple times in sequence for a
@@ -11,9 +15,11 @@ import java.util.function.IntSupplier;
  * @version 1.0
  * @author Kabir Goyal
  */
-public class Loop extends Sequential {
+public class Loop extends CommandBuilder {
     IntSupplier iterationsSupplier;
+    private List<Command> commands;
     Command command;
+    private int index = 0;
 
     /**
      * Constructs a new Loop command group that runs the given command for the
@@ -37,27 +43,61 @@ public class Loop extends Sequential {
     public Loop(Command command, IntSupplier iterationsSupplier) {
         this.command = command;
         this.iterationsSupplier = iterationsSupplier;
-    }
 
-    @Override
-    public void start() {
-        int iterations = iterationsSupplier.getAsInt();
-        Command[] repeatedCommands = new Command[iterations];
-        for (int i = 0; i < iterations; i++) {
-            repeatedCommands[i] = command.copy();
-        }
-        commands = repeatedCommands;
-        super.start();
-    }
 
-    @Override
-    public Loop setChainability(Chainability chainability) {
-        super.setChainability(chainability);
-        return this;
-    }
+        requiring(command.requirements());
 
-    @Override
-    public Loop copy() {
-        return new Loop(command.copy(), iterationsSupplier);
+        setPriority(command.priority());
+
+        setExecute(() -> {
+            if (done()) return;
+
+            Command current = commands.get(index);
+
+            if (current == null) {
+                index++;
+                execute();
+                return;
+            }
+
+            if (current.done()) {
+                current.end(EndCondition.NATURALLY);
+                index++;
+                if (!done()) {
+                    Command next = commands.get(index);
+                    if (next != null) next.start();
+                }
+                return;
+            }
+
+            current.execute();
+        });
+
+        setEnd(endCondition -> {
+            if (endCondition == EndCondition.SUSPENDED) {
+                commands.get(index).end(endCondition);
+            } else {
+                for (int i = index; i < commands.size(); i++) {
+                    commands.get(i).end(endCondition);
+                }
+                index = commands.size();
+            }
+        });
+
+        setStart(() -> {
+            index = 0;
+
+            commands =
+                java.util.stream.IntStream.range(0, iterationsSupplier.getAsInt())
+                .mapToObj(i -> command)
+                .collect(Collectors.toList());
+
+            if (!done()) {
+                Command current = commands.get(index);
+                if (current != null) current.start();
+            }
+        });
+
+        setDone(() -> index >= commands.size());
     }
 }
