@@ -26,11 +26,12 @@ public class Deadline extends CommandBuilder {
     private boolean deadlineCompleted = false;
 
     /**
-     * Constructs a new Deadline command group with the passed in commands, where
-     * the first command is the deadline command.
+     * Constructs a new Deadline command group with the specified deadline command
+     * and additional commands to run in parallel. The group ends when the deadline
+     * command finishes, at which point all other commands are interrupted.
      *
-     * @param deadline  the command to use as the deadline
-     * @param children the other commands to run in parallel
+     * @param deadline the command that determines when the group ends
+     * @param children the other commands to run in parallel with the deadline
      */
     public Deadline(Command deadline, Command... children) {
         this.deadline = deadline;
