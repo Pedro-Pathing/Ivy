@@ -3,23 +3,24 @@ package com.pedropathing.ivy.commands.follow;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierPoint;
 import com.pedropathing.geometry.Pose;
+import com.pedropathing.ivy.CommandBuilder;
 import com.pedropathing.paths.HeadingInterpolator;
 import com.pedropathing.paths.Path;
 import com.pedropathing.paths.PathConstraints;
 
 /**
  * A command that makes the Pedro follower turn to a specified heading.
- * 
+ *
  * @version 1.0
  * @author Baron Henderson
  * @author Havish Sripada
  */
-public class Turn extends CommandClass {
+public class Turn extends CommandBuilder {
 
     /**
      * Constructs a new Turn command that makes the given Follower turn to the
      * specified heading.
-     * 
+     *
      * @param follower The Follower to turn
      * @param radians  The heading to turn to in radians
      */
@@ -30,7 +31,7 @@ public class Turn extends CommandClass {
     /**
      * Constructs a new Turn command that makes the given Follower turn to the
      * specified heading.
-     * 
+     *
      * @param follower    The Follower to turn
      * @param radians     The heading to turn to in radians
      * @param constraints The error allowed to consider the turn complete
