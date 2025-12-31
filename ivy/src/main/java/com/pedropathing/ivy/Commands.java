@@ -17,6 +17,7 @@ import com.pedropathing.ivy.groups.BooleanLoop;
 import com.pedropathing.ivy.groups.Deadline;
 import com.pedropathing.ivy.groups.Parallel;
 import com.pedropathing.ivy.groups.Race;
+import com.pedropathing.ivy.groups.Repeat;
 import com.pedropathing.ivy.groups.Sequential;
 import com.pedropathing.paths.PathChain;
 import com.pedropathing.paths.PathConstraints;
@@ -86,23 +87,23 @@ public final class Commands {
     /**
      * Creates a command that runs the given command a fixed number of times.
      *
-     * @param command    the command to loop
+     * @param command    the command to repeat
      * @param iterations the number of times to run the command
-     * @return a new Loop command
+     * @return a new Repeat command
      */
-    public static CommandBuilder loop(Command command, int iterations) {
-        return new com.pedropathing.ivy.groups.Loop(command, iterations);
+    public static CommandBuilder repeat(Command command, int iterations) {
+        return new Repeat(command, iterations);
     }
 
     /**
      * Creates a command that runs the given command a dynamic number of times.
      *
-     * @param command            the command to loop
+     * @param command            the command to repeat
      * @param iterationsSupplier supplies the number of iterations at start time
-     * @return a new Loop command
+     * @return a new Repeat command
      */
-    public static CommandBuilder loop(Command command, IntSupplier iterationsSupplier) {
-        return new com.pedropathing.ivy.groups.Loop(command, iterationsSupplier);
+    public static CommandBuilder repeat(Command command, IntSupplier iterationsSupplier) {
+        return new Repeat(command, iterationsSupplier);
     }
 
     /**
