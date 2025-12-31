@@ -13,7 +13,6 @@ import com.pedropathing.ivy.commands.WaitUntil;
 import com.pedropathing.ivy.commands.follow.Follow;
 import com.pedropathing.ivy.commands.follow.Hold;
 import com.pedropathing.ivy.commands.follow.Turn;
-import com.pedropathing.ivy.groups.BooleanLoop;
 import com.pedropathing.ivy.groups.Deadline;
 import com.pedropathing.ivy.groups.Loop;
 import com.pedropathing.ivy.groups.Parallel;
@@ -115,17 +114,6 @@ public final class Commands {
      */
     public static CommandBuilder loop(Command command) {
         return new Loop(command);
-    }
-
-    /**
-     * Creates a command that repeatedly runs a command until a condition is true.
-     *
-     * @param endCondition the condition that stops the loop when true
-     * @param command      the command to run repeatedly
-     * @return a new BooleanLoop command
-     */
-    public static CommandBuilder booleanLoop(BooleanSupplier endCondition, Command command) {
-        return new BooleanLoop(endCondition, command);
     }
 
     /**
