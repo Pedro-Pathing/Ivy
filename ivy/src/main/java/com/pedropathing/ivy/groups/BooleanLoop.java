@@ -1,58 +1,61 @@
 package com.pedropathing.ivy.groups;
 
 import com.pedropathing.ivy.Command;
-import com.pedropathing.ivy.Scheduler;
+import com.pedropathing.ivy.CommandBuilder;
+import com.pedropathing.ivy.behaviors.EndCondition;
 
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BooleanSupplier;
 
 /**
- * A command that schedules itself when it ends until a given condition is
- * false.
+ * A command group that repeatedly runs a command until a given condition
+ * returns true.
  *
  * @version 1.0
  * @author Kabir Goyal
  */
-public class BooleanLoop extends CommandClass {
-    private final AtomicReference<CommandClass> repeatedCommandReference = new AtomicReference<>(new CommandClass());
+public class BooleanLoop extends CommandBuilder {
+    private final Command command;
     private final BooleanSupplier endCondition;
 
     /**
-     * Command that schedules itself when it ends until a given condition is false.
+     * Constructs a new BooleanLoop that runs the given command repeatedly
+     * until the end condition returns true.
      *
-     * @param endCondition the condition to check before each iteration
-     * @param c            the command to run repeatedly
+     * @param endCondition the condition that, when true, stops the loop
+     * @param command      the command to run repeatedly
      */
-    public BooleanLoop(BooleanSupplier endCondition, Command c) {
-        CommandClass repeatedCommand = new CommandClass();
+    public BooleanLoop(BooleanSupplier endCondition, Command command) {
+        this.command = command;
         this.endCondition = endCondition;
-        repeatedCommand.adoptBehavior(c, true);
-        repeatedCommand.setEnd(
-                (interrupted) -> {
-                    c.end(interrupted);
-                    if (!endCondition.getAsBoolean()) {
-                        Scheduler.getInstance().schedule(repeatedCommandReference.get().copy());
-                    }
-                });
-        repeatedCommandReference.set(repeatedCommand);
-    }
 
-    /**
-     * Starts the first iteration of the lazy command.
-     * Not to be called directly, use a scheduler instead.
-     */
-    @Override
-    public void start() {
-        Scheduler.getInstance().schedule(repeatedCommandReference.get().copy());
-    }
+        requiring(command.requirements());
 
-    /**
-     * Always returns true, as this command is done immediately after starting.
-     *
-     * @return true
-     */
-    @Override
-    public boolean done() {
-        return endCondition.getAsBoolean();
+        setPriority(command.priority());
+
+        setStart(() -> {
+            if (!done()) {
+                command.start();
+            }
+        });
+
+        setExecute(() -> {
+            if (done()) return;
+
+            if (command.done()) {
+                command.end(EndCondition.NATURALLY);
+                if (!done()) {
+                    command.start();
+                }
+                return;
+            }
+
+            command.execute();
+        });
+
+        setEnd(endCond -> {
+            command.end(endCond);
+        });
+
+        setDone(endCondition::getAsBoolean);
     }
 }
