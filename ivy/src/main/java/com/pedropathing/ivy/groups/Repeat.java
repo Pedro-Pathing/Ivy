@@ -10,37 +10,37 @@ import java.util.stream.Collectors;
 
 /**
  * A command group that runs a command multiple times in sequence for a
- * specified number iterations.
- * 
+ * specified number of iterations.
+ *
  * @version 1.0
  * @author Kabir Goyal
  */
-public class Loop extends CommandBuilder {
+public class Repeat extends CommandBuilder {
     private final IntSupplier iterationsSupplier;
     private final Command command;
     private List<Command> commands;
     private int index = 0;
 
     /**
-     * Constructs a new Loop command group that runs the given command for the
+     * Constructs a new Repeat command group that runs the given command for the
      * specified number of iterations.
-     * 
-     * @param command    the command to run in a loop
+     *
+     * @param command    the command to repeat
      * @param iterations the number of times to run the command
      */
-    public Loop(Command command, int iterations) {
+    public Repeat(Command command, int iterations) {
         this(command, () -> iterations);
     }
 
     /**
-     * Constructs a new Loop command group that runs the given command for the
+     * Constructs a new Repeat command group that runs the given command for the
      * specified number of iterations supplied by the given IntSupplier.
-     * 
-     * @param command            the command to run in a loop
+     *
+     * @param command            the command to repeat
      * @param iterationsSupplier the supplier that provides the number of times to
      *                           run the command
      */
-    public Loop(Command command, IntSupplier iterationsSupplier) {
+    public Repeat(Command command, IntSupplier iterationsSupplier) {
         this.command = command;
         this.iterationsSupplier = iterationsSupplier;
 
