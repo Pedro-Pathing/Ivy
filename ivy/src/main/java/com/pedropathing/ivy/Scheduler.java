@@ -76,6 +76,17 @@ public final class Scheduler {
         startCommand(command);
     }
 
+
+    /**
+     * Attempts to schedule multiple commands for execution
+     *
+     * @param commands commands to be scheduled
+     */
+    @SuppressWarnings("DataFlowIssue")
+    public static void schedule(Command... commands) {
+        Arrays.stream(commands).forEach(Scheduler::schedule);
+    }
+
     private static void interrupt(Command command) {
         switch (command.interruptedBehavior()) {
             case END:
