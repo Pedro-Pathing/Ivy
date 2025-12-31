@@ -1,9 +1,12 @@
 package com.pedropathing.ivy.commands;
 
 import com.pedropathing.ivy.Command;
+import com.pedropathing.ivy.CommandBuilder;
+import com.pedropathing.ivy.behaviors.EndCondition;
 
 import java.util.EnumMap;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
  * A command that selects and runs one of several commands based on the value
@@ -12,10 +15,10 @@ import java.util.function.Supplier;
  * @version 1.0
  * @author Kabir Goyal
  */
-public class Match<T extends Enum<T>> extends CommandClass {
-    private Supplier<T> stateSupplier;
-    private T state;
-    private EnumMap<T, Command> cases;
+public class Match<T extends Enum<T>> extends CommandBuilder {
+    private final Supplier<T> stateSupplier;
+    private final EnumMap<T, Command> cases;
+    private Command selected;
 
     /**
      * Constructs a new Match command that selects a command to run based on
@@ -28,32 +31,36 @@ public class Match<T extends Enum<T>> extends CommandClass {
     public Match(Supplier<T> stateSupplier, EnumMap<T, Command> cases) {
         this.stateSupplier = stateSupplier;
         this.cases = cases;
-    }
 
-    /**
-     * Starts the command by evaluating the state supplier and adopting the
-     * corresponding behavior.
-     * Not to be called directly, use a scheduler instead.
-     */
-    @Override
-    public void start() {
-        state = stateSupplier.get();
-        if (cases.get(state) != null) {
-            adoptBehavior(cases.get(state));
-        } else {
-            setDone(() -> true);
-        }
-    }
+        requiring(
+                cases.values().stream()
+                        .flatMap(command -> command.requirements().stream())
+                        .collect(Collectors.toSet())
+        );
 
-    /**
-     * Creates a copy of this Match command.
-     *
-     * @return a new Match command with copies of the original commands
-     */
-    @Override
-    public Match<T> copy() {
-        EnumMap<T, Command> copiedCases = cases.clone();
-        copiedCases.replaceAll((k, v) -> v.copy());
-        return new Match<>(stateSupplier, copiedCases);
+        setPriority(cases.values().stream().mapToInt(Command::priority).max().orElse(0));
+
+        setStart(() -> {
+            T state = stateSupplier.get();
+            selected = cases.get(state);
+            if (selected != null) {
+                selected.start();
+            }
+        });
+
+        setExecute(() -> {
+            if (done()) return;
+            if (selected != null) {
+                selected.execute();
+            }
+        });
+
+        setDone(() -> selected == null || selected.done());
+
+        setEnd(endCondition -> {
+            if (selected != null) {
+                selected.end(endCondition);
+            }
+        });
     }
 }
