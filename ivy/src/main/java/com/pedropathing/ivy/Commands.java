@@ -15,6 +15,7 @@ import com.pedropathing.ivy.commands.follow.Hold;
 import com.pedropathing.ivy.commands.follow.Turn;
 import com.pedropathing.ivy.groups.BooleanLoop;
 import com.pedropathing.ivy.groups.Deadline;
+import com.pedropathing.ivy.groups.Loop;
 import com.pedropathing.ivy.groups.Parallel;
 import com.pedropathing.ivy.groups.Race;
 import com.pedropathing.ivy.groups.Repeat;
@@ -104,6 +105,16 @@ public final class Commands {
      */
     public static CommandBuilder repeat(Command command, IntSupplier iterationsSupplier) {
         return new Repeat(command, iterationsSupplier);
+    }
+
+    /**
+     * Creates a command that runs the given command infinitely until interrupted.
+     *
+     * @param command the command to loop indefinitely
+     * @return a new Loop command
+     */
+    public static CommandBuilder loop(Command command) {
+        return new Loop(command);
     }
 
     /**
