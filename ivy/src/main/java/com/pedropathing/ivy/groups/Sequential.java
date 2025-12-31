@@ -33,7 +33,7 @@ public class Sequential extends CommandBuilder {
                         .collect(Collectors.toSet())
         );
 
-        setPriority(commands.stream().mapToInt(Command::priority).max().getAsInt());
+        setPriority(commands.stream().mapToInt(Command::priority).max().orElse(0));
 
         setExecute(() -> {
             if (done()) return;
