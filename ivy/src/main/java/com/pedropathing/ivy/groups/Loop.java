@@ -16,9 +16,9 @@ import java.util.stream.Collectors;
  * @author Kabir Goyal
  */
 public class Loop extends CommandBuilder {
-    IntSupplier iterationsSupplier;
+    private final IntSupplier iterationsSupplier;
+    private final Command command;
     private List<Command> commands;
-    Command command;
     private int index = 0;
 
     /**
@@ -43,7 +43,6 @@ public class Loop extends CommandBuilder {
     public Loop(Command command, IntSupplier iterationsSupplier) {
         this.command = command;
         this.iterationsSupplier = iterationsSupplier;
-
 
         requiring(command.requirements());
 
