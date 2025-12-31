@@ -1,16 +1,17 @@
 package com.pedropathing.ivy.commands.follow;
 
 import com.pedropathing.follower.Follower;
+import com.pedropathing.ivy.CommandBuilder;
 import com.pedropathing.paths.PathChain;
 
 /**
  * A command that makes the Pedro follower follow a specified path.
- * 
+ *
  * @version 1.0
  * @author Baron Henderson
  * @author Havish Sripada
  */
-public class Follow extends CommandClass {
+public class Follow extends CommandBuilder {
     private final Follower follower;
     private final PathChain path;
     private boolean holdEnd;
@@ -19,7 +20,7 @@ public class Follow extends CommandClass {
     /**
      * Constructs a new Follow command that makes the given Follower follow the
      * specified path.
-     * 
+     *
      * @param f         The Follower to follow the path
      * @param pathChain The PathChain to follow
      */
@@ -28,12 +29,13 @@ public class Follow extends CommandClass {
         this.path = pathChain;
         maxPower = follower.getMaxPowerScaling();
         holdEnd = follower.constants.automaticHoldEnd;
+        initialize();
     }
 
     /**
      * Constructs a new Follow command that makes the given Follower follow the
      * specified path.
-     * 
+     *
      * @param f         The Follower to follow the path
      * @param pathChain The PathChain to follow
      * @param maxPower  The maximum power the follower can use (between 0 and 1)
@@ -43,12 +45,13 @@ public class Follow extends CommandClass {
         this.path = pathChain;
         this.maxPower = maxPower;
         holdEnd = follower.constants.automaticHoldEnd;
+        initialize();
     }
 
     /**
      * Constructs a new Follow command that makes the given Follower follow the
      * specified path.
-     * 
+     *
      * @param f         The Follower to follow the path
      * @param pathChain The PathChain to follow
      * @param holdEnd   If the robot should maintain its ending position
@@ -58,12 +61,13 @@ public class Follow extends CommandClass {
         this.path = pathChain;
         this.holdEnd = holdEnd;
         maxPower = follower.getMaxPowerScaling();
+        initialize();
     }
 
     /**
      * Constructs a new Follow command that makes the given Follower follow the
      * specified path.
-     * 
+     *
      * @param f         The Follower to follow the path
      * @param pathChain The PathChain to follow
      * @param holdEnd   If the robot should maintain its ending position
@@ -74,6 +78,12 @@ public class Follow extends CommandClass {
         this.path = pathChain;
         this.holdEnd = holdEnd;
         this.maxPower = maxPower;
+        initialize();
+    }
+
+    private void initialize() {
+        setStart(() -> follower.followPath(path, maxPower, holdEnd));
+        setDone(() -> !follower.isBusy());
     }
 
     /**
@@ -90,37 +100,12 @@ public class Follow extends CommandClass {
 
     /**
      * Sets the follower's maximum power
-     * 
+     *
      * @param power Between 0 and 1
      * @return This command so setters can be chained
      */
     public Follow setMaxPower(double power) {
         this.maxPower = power;
         return this;
-    }
-
-    /**
-     * Starts the follower following the path
-     */
-    @Override
-    public void start() {
-        follower.followPath(path, maxPower, holdEnd);
-    }
-
-    /**
-     * @return whether the follower has finished following the path
-     */
-    @Override
-    public boolean done() {
-        return !follower.isBusy();
-    }
-
-    /**
-     * Ends the follower's path following
-     * 
-     * @param interrupted whether the command was interrupted or ended normally
-     */
-    @Override
-    public void end(boolean interrupted) {
     }
 }
