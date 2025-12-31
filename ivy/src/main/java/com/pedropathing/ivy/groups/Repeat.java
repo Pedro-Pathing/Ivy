@@ -16,6 +16,8 @@ import java.util.stream.Collectors;
  * @author Kabir Goyal
  */
 public class Repeat extends CommandBuilder {
+    private final IntSupplier iterationsSupplier;
+    private final Command command;
     private List<Command> commands;
     private int index = 0;
 
