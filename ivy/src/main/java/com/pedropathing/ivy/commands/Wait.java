@@ -1,5 +1,6 @@
 package com.pedropathing.ivy.commands;
 
+import com.pedropathing.ivy.CommandBuilder;
 import com.pedropathing.util.Timer;
 
 /**
@@ -9,7 +10,7 @@ import com.pedropathing.util.Timer;
  * @author Baron Henderson
  * @author Kabir Goyal
  */
-public class Wait extends CommandClass {
+public class Wait extends CommandBuilder {
     Timer timer = new Timer();
 
     /**
@@ -19,7 +20,7 @@ public class Wait extends CommandClass {
      * @param milliseconds the amount of time to wait in milliseconds
      */
     public Wait(double milliseconds) {
-        super.setStart(() -> timer.resetTimer());
-        super.setDone(() -> timer.getElapsedTime() >= milliseconds);
+        setStart(() -> timer.resetTimer());
+        setDone(() -> timer.getElapsedTime() >= milliseconds);
     }
 }
