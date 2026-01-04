@@ -1,4 +1,4 @@
-package com.pedropathing.ivy.commands.follow;
+package com.pedropathing.ivy.pedro;
 
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierPoint;
@@ -13,7 +13,7 @@ import com.pedropathing.paths.PathConstraints;
  * @author Baron Henderson
  * @author Havish Sripada
  */
-public class Hold extends CommandBuilder {
+class Hold extends CommandBuilder {
     /**
      * Constructs a new Hold command that makes the given Follower hold its
      * current position.

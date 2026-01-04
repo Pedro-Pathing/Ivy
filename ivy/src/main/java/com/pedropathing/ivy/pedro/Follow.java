@@ -1,4 +1,4 @@
-package com.pedropathing.ivy.commands.follow;
+package com.pedropathing.ivy.pedro;
 
 import com.pedropathing.follower.Follower;
 import com.pedropathing.ivy.CommandBuilder;
@@ -11,7 +11,7 @@ import com.pedropathing.paths.PathChain;
  * @author Baron Henderson
  * @author Havish Sripada
  */
-public class Follow extends CommandBuilder {
+class Follow extends CommandBuilder {
     private final Follower follower;
     private final PathChain path;
     private boolean holdEnd;
@@ -84,28 +84,5 @@ public class Follow extends CommandBuilder {
     private void initialize() {
         setStart(() -> follower.followPath(path, maxPower, holdEnd));
         setDone(() -> !follower.isBusy());
-    }
-
-    /**
-     * Decides whether or not to make the robot maintain its position once the path
-     * ends.
-     *
-     * @param holdEnd If the robot should maintain its ending position
-     * @return This command so setters can be chained
-     */
-    public Follow setHoldEnd(boolean holdEnd) {
-        this.holdEnd = holdEnd;
-        return this;
-    }
-
-    /**
-     * Sets the follower's maximum power
-     *
-     * @param power Between 0 and 1
-     * @return This command so setters can be chained
-     */
-    public Follow setMaxPower(double power) {
-        this.maxPower = power;
-        return this;
     }
 }

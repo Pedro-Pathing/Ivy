@@ -11,7 +11,7 @@ import com.pedropathing.ivy.behaviors.EndCondition;
  * @version 1.0
  * @author Kabir Goyal
  */
-public class Loop extends CommandBuilder {
+class Loop extends CommandBuilder {
 
     /**
      * Constructs a new Loop command that runs the given command infinitely.

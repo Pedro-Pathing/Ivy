@@ -20,9 +20,8 @@ import java.util.stream.Collectors;
  * @author Kabir Goyal
  * @version 1.0
  */
-public class Deadline extends CommandBuilder {
+class Deadline extends CommandBuilder {
     private final Map<Command, Boolean> commands = new HashMap<>();
-    private final Command deadline;
     private boolean deadlineCompleted = false;
 
     /**
@@ -34,7 +33,6 @@ public class Deadline extends CommandBuilder {
      * @param children the other commands to run in parallel with the deadline
      */
     public Deadline(Command deadline, Command... children) {
-        this.deadline = deadline;
         Arrays.stream(children).forEach(command -> commands.put(command, false));
 
         requiring(

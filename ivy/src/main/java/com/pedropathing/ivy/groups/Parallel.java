@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
  * @author Kabir Goyal
  * @version 1.0
  */
-public class Parallel extends CommandBuilder {
+class Parallel extends CommandBuilder {
     private final Map<Command, Boolean> commands = new HashMap<>();
 
     /**

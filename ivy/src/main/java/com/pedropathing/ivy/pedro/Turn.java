@@ -1,4 +1,4 @@
-package com.pedropathing.ivy.commands.follow;
+package com.pedropathing.ivy.pedro;
 
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierPoint;
@@ -15,7 +15,7 @@ import com.pedropathing.paths.PathConstraints;
  * @author Baron Henderson
  * @author Havish Sripada
  */
-public class Turn extends CommandBuilder {
+class Turn extends CommandBuilder {
 
     /**
      * Constructs a new Turn command that makes the given Follower turn to the
