@@ -13,7 +13,7 @@ import java.util.function.Supplier;
  * @author Havish Sripada
  * @author Kabir Goyal
  */
-public class Lazy extends CommandBuilder {
+class Lazy extends CommandBuilder {
     private final Supplier<Command> commandSupplier;
     private Command command;
 

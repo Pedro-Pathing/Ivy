@@ -2,7 +2,6 @@ package com.pedropathing.ivy.commands;
 
 import com.pedropathing.ivy.Command;
 import com.pedropathing.ivy.CommandBuilder;
-import com.pedropathing.ivy.behaviors.EndCondition;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -12,14 +11,11 @@ import java.util.function.BooleanSupplier;
  * A command that chooses between two commands to run based on a boolean
  * condition.
  *
- * @version 1.0
  * @author Havish Sripada
  * @author Kabir Goyal
+ * @version 1.0
  */
-public class Conditional extends CommandBuilder {
-    private final BooleanSupplier decider;
-    private final Command ifTrue;
-    private final Command ifFalse;
+class Conditional extends CommandBuilder {
     private Command selected;
 
     /**
@@ -32,10 +28,6 @@ public class Conditional extends CommandBuilder {
      * @param ifFalse the command to run if the decider returns false
      */
     public Conditional(BooleanSupplier decider, Command ifTrue, Command ifFalse) {
-        this.decider = decider;
-        this.ifTrue = ifTrue;
-        this.ifFalse = ifFalse;
-
         Set<Object> allRequirements = new HashSet<>();
         allRequirements.addAll(ifTrue.requirements());
         allRequirements.addAll(ifFalse.requirements());

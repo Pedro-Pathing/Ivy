@@ -69,5 +69,7 @@ public interface Command {
         Scheduler.schedule(this);
     }
 
+    Command NOOP = build();
+
     // TODO: chaining utilities
 }

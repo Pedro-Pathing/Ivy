@@ -2,7 +2,6 @@ package com.pedropathing.ivy.commands;
 
 import com.pedropathing.ivy.Command;
 import com.pedropathing.ivy.CommandBuilder;
-import com.pedropathing.ivy.behaviors.EndCondition;
 
 import java.util.EnumMap;
 import java.util.function.Supplier;
@@ -12,10 +11,10 @@ import java.util.stream.Collectors;
  * A command that selects and runs one of several commands based on the value
  * of an enum state.
  *
- * @version 1.0
  * @author Kabir Goyal
+ * @version 1.0
  */
-public class Match<T extends Enum<T>> extends CommandBuilder {
+class Match<T extends Enum<T>> extends CommandBuilder {
     private final Supplier<T> stateSupplier;
     private final EnumMap<T, Command> cases;
     private Command selected;

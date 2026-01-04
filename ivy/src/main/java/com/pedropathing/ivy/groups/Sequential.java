@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
  * @author Kabir Goyal
  * @version 1.0
  */
-public class Sequential extends CommandBuilder {
+class Sequential extends CommandBuilder {
     private final List<Command> commands;
     private int index = 0;
 

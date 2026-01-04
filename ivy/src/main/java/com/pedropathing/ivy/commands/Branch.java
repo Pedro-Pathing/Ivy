@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
  * @author Havish Sripada
  * @author Kabir Goyal
  */
-public class Branch extends CommandBuilder {
+class Branch extends CommandBuilder {
     private final LinkedHashMap<BooleanSupplier, Command> commands;
     private Command selected;
 

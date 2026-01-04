@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
  * @author Kabir Goyal
  * @version 1.0
  */
-public class Race extends CommandBuilder {
+class Race extends CommandBuilder {
     private final Map<Command, Boolean> commands = new HashMap<>();
     private boolean raceCompleted = false;
 
