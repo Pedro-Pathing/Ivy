@@ -16,13 +16,12 @@ import java.util.stream.Collectors;
  * @author Davis Luxenberg
  */
 public final class Scheduler {
-    private Scheduler() {
-    }
-
     private static final List<Command> runningCommands = new LinkedList<>();
     private static final Map<Object, Command> activeRequirements = new HashMap<>();
     private static final List<Command> queuedCommands = new LinkedList<>();
     private static final List<Command> suspendedCommands = new LinkedList<>();
+    private Scheduler() {
+    }
 
     /**
      * Attempts to schedule a command for execution
@@ -162,5 +161,20 @@ public final class Scheduler {
         activeRequirements.clear();
         queuedCommands.clear();
         suspendedCommands.clear();
+    }
+
+    public static boolean isRunning(Command command) {
+        return runningCommands.contains(command);
+    }
+
+    public static boolean isScheduled(Command command) {
+        return isRunning(command) || suspendedCommands.contains(command) || queuedCommands.contains(command);
+    }
+
+    public static void cancel(Command command) {
+        removeRequirements(command);
+        runningCommands.remove(command);
+        suspendedCommands.remove(command);
+        queuedCommands.remove(command);
     }
 }
