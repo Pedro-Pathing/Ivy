@@ -114,4 +114,10 @@ public final class Commands {
     public static <T extends Enum<T>> CommandBuilder match(Supplier<T> stateSupplier, EnumMap<T, Command> cases) {
         return new Match<>(stateSupplier, cases);
     }
+
+    public static CommandBuilder onInterrupt(Runnable callback) {
+        return Command.build()
+                .setDone(() -> false)
+                .setEnd(_endCondition -> callback.run());
+    }
 }
