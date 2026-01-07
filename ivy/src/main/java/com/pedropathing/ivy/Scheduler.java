@@ -2,6 +2,7 @@ package com.pedropathing.ivy;
 
 import com.pedropathing.ivy.behaviors.BlockedBehavior;
 import com.pedropathing.ivy.behaviors.EndCondition;
+import com.pedropathing.ivy.bindings.Bindings;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -123,6 +124,7 @@ public final class Scheduler {
      * Executes all running commands. This method should be called periodically.
      */
     public static void execute() {
+        Bindings.update();
         if (!runningCommands.isEmpty()) {
             new ArrayList<>(runningCommands).forEach(command -> {
                 command.execute();
@@ -172,9 +174,12 @@ public final class Scheduler {
     }
 
     public static void cancel(Command command) {
-        removeRequirements(command);
-        runningCommands.remove(command);
-        suspendedCommands.remove(command);
-        queuedCommands.remove(command);
+        if (isScheduled(command)) {
+            command.end(EndCondition.INTERRUPTED);
+            removeRequirements(command);
+            runningCommands.remove(command);
+            suspendedCommands.remove(command);
+            queuedCommands.remove(command);
+        }
     }
 }

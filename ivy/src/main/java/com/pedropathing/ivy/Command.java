@@ -79,6 +79,14 @@ public interface Command {
         Scheduler.schedule(this);
     }
 
+    default void cancel() {
+        Scheduler.cancel(this);
+    }
+
+    default boolean isScheduled() {
+        return Scheduler.isScheduled(this);
+    }
+
     default CommandBuilder then(Command... commands) {
         return sequential(Stream.concat(Stream.of(this), Arrays.stream(commands)).toArray(Command[]::new));
     }
