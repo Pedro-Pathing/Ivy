@@ -30,7 +30,7 @@ public final class Commands {
      * @param milliseconds the time to wait in milliseconds
      * @return a new Wait command
      */
-    public static CommandBuilder wait(double milliseconds) {
+    public static CommandBuilder waitMs(double milliseconds) {
         Timer timer = new Timer();
         return Command.build()
                 .setStart(timer::resetTimer)
