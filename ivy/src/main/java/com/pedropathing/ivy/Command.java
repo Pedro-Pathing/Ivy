@@ -21,7 +21,7 @@ import static com.pedropathing.ivy.groups.Groups.*;
  * @author Kabir Goyal
  * @author Davis Luxenberg
  */
-public interface Command extends Runnable {
+public interface Command {
     Command NOOP = build();
 
     static CommandBuilder build() {
@@ -77,11 +77,6 @@ public interface Command extends Runnable {
 
     default void schedule() {
         Scheduler.schedule(this);
-    }
-
-    @Override
-    default void run() {
-        schedule();
     }
 
     default void cancel() {
