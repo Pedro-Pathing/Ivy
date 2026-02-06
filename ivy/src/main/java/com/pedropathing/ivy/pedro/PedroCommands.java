@@ -98,7 +98,7 @@ public final class PedroCommands {
      * @param radians  the target heading in radians
      * @return a new Turn command
      */
-    public static CommandBuilder turn(Follower follower, double radians) {
+    public static CommandBuilder turnTo(Follower follower, double radians) {
         return new Turn(follower, radians);
     }
 
@@ -110,7 +110,7 @@ public final class PedroCommands {
      * @param constraints the path constraints for completion tolerance
      * @return a new Turn command
      */
-    public static CommandBuilder turn(Follower follower, double radians, PathConstraints constraints) {
+    public static CommandBuilder turnTo(Follower follower, double radians, PathConstraints constraints) {
         return new Turn(follower, radians, constraints);
     }
 
