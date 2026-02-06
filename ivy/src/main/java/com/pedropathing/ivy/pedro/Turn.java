@@ -14,6 +14,7 @@ import com.pedropathing.paths.PathConstraints;
  * @version 1.0
  * @author Baron Henderson
  * @author Havish Sripada
+ * @author Kabir Goyal
  */
 class Turn extends CommandBuilder {
 
@@ -45,7 +46,6 @@ class Turn extends CommandBuilder {
             follower.followPath(path);
         });
 
-        setDone(() -> follower.getTranslationalError().getMagnitude() < constraints.getTranslationalConstraint() &&
-                follower.getHeadingError() < constraints.getHeadingConstraint());
+        setDone(() -> !follower.isBusy());
     }
 }
