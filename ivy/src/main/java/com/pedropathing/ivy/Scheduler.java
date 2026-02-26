@@ -17,10 +17,10 @@ import java.util.stream.Collectors;
  * @author Davis Luxenberg
  */
 public final class Scheduler {
-    private static final List<Command> runningCommands = new LinkedList<>();
+    private static final Deque<Command> runningCommands = new ArrayDeque<>();
     private static final Map<Object, Command> activeRequirements = new HashMap<>();
-    private static final List<Command> queuedCommands = new LinkedList<>();
-    private static final List<Command> suspendedCommands = new LinkedList<>();
+    private static final Deque<Command> queuedCommands = new ArrayDeque<>();
+    private static final Deque<Command> suspendedCommands = new ArrayDeque<>();
     private Scheduler() {
     }
 
@@ -126,32 +126,42 @@ public final class Scheduler {
     public static void execute() {
         Bindings.update();
         if (!runningCommands.isEmpty()) {
-            new ArrayList<>(runningCommands).forEach(command -> {
+            Iterator<Command> runningIterator = runningCommands.iterator();
+            while (runningIterator.hasNext()) {
+                Command command = runningIterator.next();
                 command.execute();
                 if (command.done()) {
                     command.end(EndCondition.NATURALLY);
                     removeRequirements(command);
-                    runningCommands.remove(command);
+                    runningIterator.remove();
                 }
-            });
+            }
         }
 
-        new ArrayList<>(queuedCommands).forEach(command -> {
-            boolean canBeScheduled = command.requirements().stream().noneMatch(activeRequirements::containsKey);
-            if (canBeScheduled) {
-                queuedCommands.remove(command);
-                startCommand(command);
+        if (!queuedCommands.isEmpty()) {
+            Iterator<Command> queuedIterator = queuedCommands.iterator();
+            while (queuedIterator.hasNext()) {
+                Command command = queuedIterator.next();
+                boolean canBeScheduled = command.requirements().stream().noneMatch(activeRequirements::containsKey);
+                if (canBeScheduled) {
+                    queuedIterator.remove();
+                    startCommand(command);
+                }
             }
-        });
+        }
 
-        new ArrayList<>(suspendedCommands).forEach(command -> {
-            boolean canBeScheduled = command.requirements().stream().noneMatch(activeRequirements::containsKey);
-            if (canBeScheduled) {
-                suspendedCommands.remove(command);
-                runningCommands.add(command);
-                addRequirements(command);
+        if (!suspendedCommands.isEmpty()) {
+            Iterator<Command> suspendedIterator = suspendedCommands.iterator();
+            while (suspendedIterator.hasNext()) {
+                Command command = suspendedIterator.next();
+                boolean canBeScheduled = command.requirements().stream().noneMatch(activeRequirements::containsKey);
+                if (canBeScheduled) {
+                    suspendedIterator.remove();
+                    runningCommands.add(command);
+                    addRequirements(command);
+                }
             }
-        });
+        }
     }
 
 
