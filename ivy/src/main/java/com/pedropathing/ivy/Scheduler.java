@@ -125,43 +125,53 @@ public final class Scheduler {
      */
     public static void execute() {
         Bindings.update();
+        ArrayDeque<Command> toRemove = new ArrayDeque<>(runningCommands.size());
         if (!runningCommands.isEmpty()) {
-            Iterator<Command> runningIterator = runningCommands.iterator();
+            Iterator<Command> runningIterator = new ArrayDeque<>(runningCommands).iterator();
             while (runningIterator.hasNext()) {
                 Command command = runningIterator.next();
                 command.execute();
                 if (command.done()) {
                     command.end(EndCondition.NATURALLY);
+                    toRemove.add(command);
                     removeRequirements(command);
                     runningIterator.remove();
                 }
             }
         }
+        runningCommands.removeAll(toRemove);
+        toRemove.clear();
 
         if (!queuedCommands.isEmpty()) {
-            Iterator<Command> queuedIterator = queuedCommands.iterator();
+            Iterator<Command> queuedIterator = new ArrayDeque<>(queuedCommands).iterator();
             while (queuedIterator.hasNext()) {
                 Command command = queuedIterator.next();
                 boolean canBeScheduled = command.requirements().stream().noneMatch(activeRequirements::containsKey);
                 if (canBeScheduled) {
+                    toRemove.add(command);
                     queuedIterator.remove();
                     startCommand(command);
                 }
             }
         }
+        queuedCommands.removeAll(toRemove);
+        toRemove.clear();
 
         if (!suspendedCommands.isEmpty()) {
-            Iterator<Command> suspendedIterator = suspendedCommands.iterator();
+            Iterator<Command> suspendedIterator = new ArrayDeque<>(suspendedCommands).iterator();
             while (suspendedIterator.hasNext()) {
                 Command command = suspendedIterator.next();
                 boolean canBeScheduled = command.requirements().stream().noneMatch(activeRequirements::containsKey);
                 if (canBeScheduled) {
+                    toRemove.add(command);
                     suspendedIterator.remove();
                     runningCommands.add(command);
                     addRequirements(command);
                 }
             }
         }
+        suspendedCommands.removeAll(toRemove);
+        toRemove.clear();
     }
 
 
