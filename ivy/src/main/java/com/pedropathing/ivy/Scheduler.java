@@ -2,7 +2,6 @@ package com.pedropathing.ivy;
 
 import com.pedropathing.ivy.behaviors.BlockedBehavior;
 import com.pedropathing.ivy.behaviors.EndCondition;
-import com.pedropathing.ivy.bindings.Bindings;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -124,7 +123,6 @@ public final class Scheduler {
      * Executes all running commands. This method should be called periodically.
      */
     public static void execute() {
-        Bindings.update();
         ArrayDeque<Command> toRemove = new ArrayDeque<>(runningCommands.size());
         if (!runningCommands.isEmpty()) {
             Iterator<Command> runningIterator = new ArrayDeque<>(runningCommands).iterator();
