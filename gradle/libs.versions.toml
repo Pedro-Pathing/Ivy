@@ -1,6 +1,6 @@
 [versions]
 androidDocumentationPlugin = "2.0.0"
-pedro = "2.0.4"
+pedro = "2.1.1"
 
 [libraries]
 android-documentation = { module = "org.jetbrains.dokka:android-documentation-plugin", version.ref = "androidDocumentationPlugin" }
