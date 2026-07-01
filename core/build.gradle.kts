@@ -25,7 +25,6 @@ android {
 }
 
 dependencies {
-    compileOnly(libs.core)
     compileOnly(libs.annotations)
     dokkaPlugin(libs.bundles.docs)
 }

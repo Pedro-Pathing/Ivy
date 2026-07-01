@@ -5,7 +5,7 @@ plugins {
 }
 
 subprojects {
-    group = "com.pedropathing"
+    group = "com.pedropathing.ivy"
     version = property("version") as String
 }
 

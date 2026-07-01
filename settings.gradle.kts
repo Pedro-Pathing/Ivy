@@ -16,4 +16,5 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "Ivy"
-include(":ivy")
+include(":core")
+include(":pedro")
