@@ -2,10 +2,11 @@ package com.pedropathing.ivy.commands;
 
 import com.pedropathing.ivy.Command;
 import com.pedropathing.ivy.CommandBuilder;
-import com.pedropathing.util.Timer;
+import com.pedropathing.utils.Timer;
 
 import java.util.EnumMap;
 import java.util.LinkedHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
@@ -33,8 +34,8 @@ public final class Commands {
     public static CommandBuilder waitMs(double milliseconds) {
         Timer timer = new Timer();
         return Command.build()
-                .setStart(timer::resetTimer)
-                .setDone(() -> timer.getElapsedTime() >= milliseconds);
+                .setStart(timer::reset)
+                .setDone(() -> timer.get(TimeUnit.MILLISECONDS) >= milliseconds);
     }
 
     /**

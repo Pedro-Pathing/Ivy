@@ -9,18 +9,6 @@ subprojects {
     version = property("version") as String
 }
 
-tasks.register("deployCentralPortal") {
-    group = "publishing"
-    description = "Publishes all subprojects to Maven Central."
-    dependsOn(subprojects.map { it.tasks.named("deployCentralPortal") })
-}
-
-tasks.register("deployNexusSnapshot") {
-    group = "publishing"
-    description = "Publishes all subprojects to Maven Central Snapshots."
-    dependsOn(subprojects.map { it.tasks.named("deployNexusSnapshot") })
-}
-
 tasks.register("deployLocal") {
     group = "publishing"
     description = "Publishes all subprojects to Maven Local."

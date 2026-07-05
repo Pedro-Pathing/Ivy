@@ -25,7 +25,7 @@ android {
 }
 
 dependencies {
-    compileOnly(libs.core)
+    compileOnly("com.pedropathing:core:3.0.0.local.alpha44")
     compileOnly(libs.annotations)
     dokkaPlugin(libs.bundles.docs)
 }
@@ -52,30 +52,9 @@ deployer {
         developer("Kabir Goyal", "kabirgoyal@icloud.com")
     }
 
-    signing {
-        key = secret("MVN_GPG_KEY")
-        password = secret("MVN_GPG_PASSWORD")
-    }
-
     content {
         androidComponents("release") {
             docs(dokkaJar)
-        }
-    }
-
-    centralPortalSpec {
-        auth {
-            user = secret("SONATYPE_USERNAME")
-            password = secret("SONATYPE_PASSWORD")
-        }
-        allowMavenCentralSync = false
-    }
-
-    nexusSpec("snapshot") {
-        repositoryUrl = "https://central.sonatype.com/repository/maven-snapshots/"
-        auth {
-            user = secret("SONATYPE_USERNAME")
-            password = secret("SONATYPE_PASSWORD")
         }
     }
 
