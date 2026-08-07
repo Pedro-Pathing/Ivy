@@ -1,7 +1,9 @@
 package com.pedropathing.ivy;
 
 import com.pedropathing.ivy.behaviors.BlockedBehavior;
+import com.pedropathing.ivy.behaviors.ConflictBehavior;
 import com.pedropathing.ivy.behaviors.EndCondition;
+import com.pedropathing.ivy.behaviors.InterruptedBehavior;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -18,6 +20,7 @@ import java.util.stream.Collectors;
 public final class Scheduler {
     private static final Deque<Command> runningCommands = new ArrayDeque<>();
     private static final Map<Object, Command> activeRequirements = new HashMap<>();
+    private static final Map<Object, Command> defaultCommands = new HashMap<>();
     private static final Deque<Command> queuedCommands = new ArrayDeque<>();
     private static final Deque<Command> suspendedCommands = new ArrayDeque<>();
     private Scheduler() {
@@ -120,6 +123,40 @@ public final class Scheduler {
     }
 
     /**
+     * Sets the default command to run when a requirement is not in use.
+     * If a default command is already registered for the given requirement, it will be replaced.
+     * Regardless of the priority the command was built with, it is forced to
+     * {@link Integer#MIN_VALUE} so default commands never block or override
+     * any other scheduled command.
+     *
+     * @param requirement the requirement that this command is for
+     * @param command the command to run when the requirement is not in use
+     */
+    public static void setDefaultCommand(Object requirement, Command command) {
+        if (!command.requirements().contains(requirement)) {
+            throw new IllegalArgumentException("Default must require the given requirement: " + requirement);
+        } else if (command.requirements().size() > 1) {
+            throw new IllegalArgumentException("Default must require only one requirement");
+        }
+        defaultCommands.put(requirement, forceMinimumPriority(command));
+    }
+
+    private static Command forceMinimumPriority(Command command) {
+        if (command.priority() == Integer.MIN_VALUE) return command;
+        return new CommandBuilder(
+                command.requirements(),
+                Integer.MIN_VALUE,
+                command.interruptedBehavior(),
+                command.blockedBehavior(),
+                command.conflictBehavior(),
+                command::start,
+                command::execute,
+                command::done,
+                command::end
+        );
+    }
+
+    /**
      * Executes all running commands. This method should be called periodically.
      */
     public static void execute() {
@@ -170,6 +207,12 @@ public final class Scheduler {
         }
         suspendedCommands.removeAll(toRemove);
         toRemove.clear();
+
+        defaultCommands.forEach((requirement, defaultCommand) -> {
+            if (!activeRequirements.containsKey(requirement)) {
+                schedule(defaultCommand);
+            }
+        });
     }
 
 
@@ -179,6 +222,7 @@ public final class Scheduler {
     public static void reset() {
         runningCommands.clear();
         activeRequirements.clear();
+        defaultCommands.clear();
         queuedCommands.clear();
         suspendedCommands.clear();
     }

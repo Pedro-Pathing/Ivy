@@ -31,7 +31,7 @@ public class CommandBuilder implements Command {
     private BooleanSupplier done;
     private Consumer<EndCondition> end;
 
-    private CommandBuilder(
+    CommandBuilder(
             Set<Object> requirements,
             int priority,
             InterruptedBehavior interruptedBehavior,
