@@ -1,27 +1,12 @@
 plugins {
-    id("com.android.library")
+    `java-library`
     id("io.deepmedia.tools.deployer")
     id("org.jetbrains.dokka")
 }
 
-android {
-    namespace = "com.pedropathing.ivy"
-    compileSdk = 30
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }
-
-    publishing {
-        singleVariant("release") {
-            withSourcesJar()
-        }
-    }
-
-    defaultConfig {
-        minSdk = 21
-    }
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
 }
 
 dependencies {
@@ -57,7 +42,8 @@ deployer {
     }
 
     content {
-        androidComponents("release") {
+        component {
+            fromJava()
             docs(dokkaJar)
         }
     }
