@@ -1,5 +1,5 @@
 plugins {
-    `java-library`
+    id("java-library")
     id("io.deepmedia.tools.deployer")
     id("org.jetbrains.dokka")
 }
