@@ -11,14 +11,16 @@ public final class PedroCommands {
     }
 
     /**
-     * Creates a command that makes the follower follow a path.
+     * Creates a command that makes the follower follow a path and finish when the follower reaches the end of the path.
      *
      * @param follower  the follower to control
      * @param path the path to follow
      * @return a new Follow command
      */
     public static CommandBuilder follow(Follower follower, Path path) {
-        return new Follow(follower, path);
+        return new CommandBuilder()
+                .setStart(() -> follower.follow(path))
+                .setDone(follower::atParametricEnd);
     }
 
     /**
