@@ -1,10 +1,10 @@
 [versions]
 androidDocumentationPlugin = "2.0.0"
-pedro = "2.1.1"
+pedro = "3.0.0-SNAPSHOT"
 
 [libraries]
 android-documentation = { module = "org.jetbrains.dokka:android-documentation-plugin", version.ref = "androidDocumentationPlugin" }
-core = { module = "com.pedropathing:core", version.ref = "pedro" }
+core = { module = "com.pedropathing:revhub", version.ref = "pedro" }
 annotations = { group = "org.jetbrains", name = "annotations", version = "23.0.0" }
 dokka-java = "org.jetbrains.dokka:kotlin-as-java-plugin:2.0.0"
 
