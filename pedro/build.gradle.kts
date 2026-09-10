@@ -28,7 +28,7 @@ dependencies {
     compileOnly(libs.core)
     compileOnly(libs.annotations)
     dokkaPlugin(libs.bundles.docs)
-    implementation(project(":core"))
+    api(project(":core"))
 }
 
 val dokkaJar = tasks.register<Jar>("dokkaJar") {
