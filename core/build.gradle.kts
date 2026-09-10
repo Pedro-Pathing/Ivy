@@ -45,6 +45,7 @@ deployer {
         component {
             fromJava()
             docs(dokkaJar)
+            javaSources()
         }
     }
 
