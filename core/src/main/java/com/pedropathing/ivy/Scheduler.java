@@ -106,7 +106,7 @@ public final class Scheduler {
     }
 
     private static void removeRequirements(Command command) {
-        command.requirements().forEach(activeRequirements::remove);
+        command.requirements().forEach(requirement -> activeRequirements.remove(requirement, command));
     }
 
     private static void addRequirements(Command command) {
@@ -128,8 +128,9 @@ public final class Scheduler {
             Iterator<Command> runningIterator = new ArrayDeque<>(runningCommands).iterator();
             while (runningIterator.hasNext()) {
                 Command command = runningIterator.next();
+                if (!isRunning(command)) continue;
                 command.execute();
-                if (command.done()) {
+                if (isRunning(command) && command.done()) {
                     command.end(EndCondition.NATURALLY);
                     toRemove.add(command);
                     removeRequirements(command);
