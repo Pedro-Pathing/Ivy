@@ -194,7 +194,7 @@ public final class Scheduler {
 
     public static void cancel(Command command) {
         if (isScheduled(command)) {
-            command.end(EndCondition.INTERRUPTED);
+            if (isRunning(command) || suspendedCommands.contains(command)) command.end(EndCondition.INTERRUPTED);
             removeRequirements(command);
             runningCommands.remove(command);
             suspendedCommands.remove(command);
