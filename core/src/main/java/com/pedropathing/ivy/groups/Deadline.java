@@ -74,9 +74,8 @@ class Deadline extends CommandBuilder {
         });
 
         setEnd(endCondition -> {
-            if (!deadlineCompleted) {
-                deadline.end(endCondition);
-            }
+            if (deadlineCompleted) return;
+            deadline.end(endCondition);
             commands.entrySet().stream()
                     .filter(entry -> !entry.getValue())
                     .forEach(entry -> entry.getKey().end(endCondition));
