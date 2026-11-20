@@ -60,14 +60,8 @@ class Sequential extends CommandBuilder {
         });
 
         setEnd(endCondition -> {
-            if (endCondition == EndCondition.SUSPENDED) {
-                commands.get(index).end(endCondition);
-            } else {
-                for (int i = index; i < commands.size(); i++) {
-                    commands.get(i).end(endCondition);
-                }
-                index = commands.size();
-            }
+            if (!done()) commands.get(index).end(endCondition);
+            if (endCondition != EndCondition.SUSPENDED) index = commands.size();
         });
 
         setStart(() -> {
