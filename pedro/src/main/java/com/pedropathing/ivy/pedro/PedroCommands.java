@@ -6,6 +6,8 @@ import com.pedropathing.ivy.commands.Commands;
 import com.pedropathing.math.Pose;
 import com.pedropathing.paths.Path;
 
+import java.util.function.DoubleSupplier;
+
 public final class PedroCommands {
     private PedroCommands() {
     }
@@ -42,6 +44,21 @@ public final class PedroCommands {
      */
     public static CommandBuilder hold(Follower follower, Pose pose) {
         return Commands.instant(() -> follower.hold(pose));
+    }
+
+    /**
+     * Creates a command that drives the follower manually with the given powers until interrupted.
+     * When it ends, the follower stops.
+     *
+     * @param follower the follower to control
+     * @param forward  the forward power
+     * @param strafe   the strafe power
+     * @param turn     the turn power
+     * @return a new Drive command
+     */
+    public static CommandBuilder drive(Follower follower, DoubleSupplier forward, DoubleSupplier strafe, DoubleSupplier turn) {
+        return Commands.infinite(() -> follower.manual(forward.getAsDouble(), strafe.getAsDouble(), turn.getAsDouble()))
+                .setEnd(endCondition -> follower.stop());
     }
 
 }
